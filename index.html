@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octaspan Cybersecurity Solutions — Cybersecurity Consulting & Product Engineering</title>
+<meta name="description" content="Octaspan Cybersecurity Solutions is a cybersecurity consulting and product engineering firm — Zero Trust architecture, cyber defense, identity protection, and security products for regulated industries.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<!-- ============================================================
+     UTILITY BAR — language / region (multilingual UX pattern)
+     ============================================================ -->
+<div class="utility-bar">
+  <div class="wrap" style="justify-content:flex-end;">
+    <div class="selectors">
+      <label class="sr-only" for="regionSelect">Region</label>
+      <select id="regionSelect" aria-label="Region">
+        <option>Global</option>
+        <option>North America</option>
+        <option>Latin America</option>
+        <option>Europe</option>
+        <option>Middle East &amp; Africa</option>
+        <option>Asia Pacific</option>
+      </select>
+      <label class="sr-only" for="langSelect">Language</label>
+      <select id="langSelect" aria-label="Language">
+        <option>English</option>
+        <option>Español</option>
+        <option>Français</option>
+        <option>Deutsch</option>
+        <option>Português</option>
+        <option>日本語</option>
+        <option>简体中文</option>
+        <option>العربية</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MASTHEAD
+     ============================================================ -->
+<header class="masthead">
+  <div class="wrap masthead-row">
+    <a href="index.html" class="brand" aria-label="Octaspan home">
+      <img src="assets/logo.png" alt="Octaspan Cybersecurity Solutions" id="brandLogo">
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <div class="nav-item" data-nav="whoweare">
+        <button aria-expanded="false">Who Are We <i class="caret"></i></button>
+        <div class="mega mega-mid">
+          <div class="mega-cols" style="grid-template-columns:1fr;">
+            <div class="mega-col">
+              <ul>
+                <li><a href="about.html">Purpose &amp; Values</a></li>
+                <li><a href="about.html">Our Impact</a></li>
+                <li><a href="about.html">Our People</a></li>
+                <li><a href="about.html">Governance</a></li>
+                <li><a href="about.html">Awards &amp; Recognition</a></li>
+                <li><a href="about.html">Press Room</a></li>
+                <li><a href="about.html">Partner With Us</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mega-foot">
+            <p>A security firm run by people who still do the work.</p>
+            <a href="about.html" class="btn-text">Visit Who We Are</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item" data-nav="services">
+        <button aria-expanded="false">What We Do <i class="caret"></i></button>
+        <div class="mega mega-wide">
+          <div class="mega-cols">
+            <div class="mega-col">
+              <h4>Cyber Defense</h4>
+              <ul>
+                <li><a href="services.html" data-svc="threat-detection">Threat Detection<small>EDR, XDR, MDR</small></a></li>
+                <li><a href="services.html" data-svc="incident-response">Incident Response<small>Breach containment, forensics, recovery</small></a></li>
+                <li><a href="services.html" data-svc="infra-network">Infrastructure &amp; Network Security<small>Firewalls, IDS/IPS, NDR, VPN</small></a></li>
+                <li><a href="services.html" data-svc="zero-trust">Zero Trust Architecture<small>Micro-segmentation, policy enforcement</small></a></li>
+              </ul>
+            </div>
+            <div class="mega-col">
+              <h4>Analytics, Cloud &amp; Identity</h4>
+              <ul>
+                <li><a href="services.html" data-svc="siem-soar">SIEM &amp; SOAR<small>Centralized logs, automated workflows</small></a></li>
+                <li><a href="services.html" data-svc="ai-security">AI Security<small>Anomaly detection, predictive analytics</small></a></li>
+                <li><a href="services.html" data-svc="cloud-data">Data &amp; Cloud Security<small>CASB, CSPM, CWPP, encryption</small></a></li>
+                <li><a href="services.html" data-svc="iam">Identity &amp; Access Management<small>IAM, PAM, Passwordless</small></a></li>
+              </ul>
+            </div>
+            <div class="mega-col">
+              <h4>Consulting &amp; Strategy</h4>
+              <ul>
+                <li><a href="services.html" data-svc="cyber-consulting">Cybersecurity Consulting<small>IAM, Zero Trust, DevSecOps advisory</small></a></li>
+                <li><a href="services.html" data-svc="devsecops">Secure DevOps Consulting<small>API security, CI/CD hardening</small></a></li>
+                <li><a href="services.html" data-svc="transactions">Strategy &amp; Transactions<small>M&amp;A cybersecurity due diligence</small></a></li>
+                <li><a href="services.html" data-svc="risk-compliance">Risk &amp; Compliance<small>ISO, NIST, GDPR, DPDP</small></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mega-foot">
+            <p>Eight practice areas, one accountable delivery team.</p>
+            <a href="services.html" class="btn-text">View all services</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item" data-nav="thinking">
+        <button aria-expanded="false">Our Thinking <i class="caret"></i></button>
+        <div class="mega mega-mid">
+          <div class="mega-cols" style="grid-template-columns:1fr;">
+            <div class="mega-col">
+              <ul>
+                <li><a href="insights.html?tab=featured">Overview<small>Everything we're publishing right now</small></a></li>
+              </ul>
+              <h4 style="margin-top:16px;">Insights</h4>
+              <ul>
+                <li><a href="insights.html?tab=featured">Featured Research<small>Original whitepapers and studies</small></a></li>
+                <li><a href="insights.html?tab=reports">Reports &amp; Survey<small>Benchmarks and annual survey data</small></a></li>
+              </ul>
+              <h4 style="margin-top:16px;">Industry Perspectives</h4>
+              <ul>
+                <li><a href="insights.html?tab=perspectives">Banking<small>Open banking and API-first identity</small></a></li>
+                <li><a href="insights.html?tab=perspectives">Telecom<small>5G core network security</small></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mega-foot">
+            <p>Research and perspective from the teams doing the work.</p>
+            <a href="insights.html" class="btn-text">Visit Our Thinking</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item" data-nav="knowledge">
+        <button aria-expanded="false">Knowledge Hub <i class="caret"></i></button>
+        <div class="mega mega-mid">
+          <div class="mega-cols" style="grid-template-columns:1fr;">
+            <div class="mega-col">
+              <ul>
+                <li><a href="knowledge.html">Case Studies<small>Real-world problem-solving examples</small></a></li>
+                <li><a href="knowledge.html">Whitepapers &amp; Research Reports<small>Trend analysis and solutions</small></a></li>
+                <li><a href="knowledge.html">Infographics<small>Visual breakdowns of threats and frameworks</small></a></li>
+                <li><a href="knowledge.html">Video Content<small>Explainers, webinars, expert interviews</small></a></li>
+                <li><a href="knowledge.html">Podcasts<small>Cybersecurity discussions and updates</small></a></li>
+                <li><a href="knowledge.html">Free Tools<small>Password checkers, breach scans, vulnerability demos</small></a></li>
+                <li><a href="knowledge.html">Downloadable Guides<small>For email capture</small></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mega-foot">
+            <p>Research and resources from the teams doing the work.</p>
+            <a href="knowledge.html" class="btn-text">Visit the Knowledge Hub</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-item" data-nav="courses">
+        <button aria-expanded="false">Courses <i class="caret"></i></button>
+        <div class="mega mega-mid">
+          <div class="mega-cols" style="grid-template-columns:1fr;">
+            <div class="mega-col">
+              <ul>
+                <li><a href="courses.html?tab=learning">Explore Certification Programs<small>Structured, credentialed learning paths</small></a></li>
+                <li><a href="courses.html?tab=learning">Featured Courses<small>This quarter's most-enrolled courses</small></a></li>
+                <li><a href="courses.html?tab=corporate">Corporate Training<small>Tailored programs for your team</small></a></li>
+                <li><a href="courses.html?tab=learning">Short Workshops<small>Focused, hands-on sessions</small></a></li>
+                <li><a href="courses.html?tab=corporate">Free Webinars and Workshop<small>Live Q&amp;A sessions</small></a></li>
+                <li><a href="courses.html?tab=learning">Learning Paths<small>Guided sequences by role or goal</small></a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mega-foot">
+            <p>Build skills your team will actually use.</p>
+            <a href="courses.html" class="btn-text">Browse Courses</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="header-cta">
+      <a href="contact.html?tab=contact-form" class="btn btn-outline on-dark btn-sm">Contact</a>
+      <a href="contact.html?tab=rfp-form" class="btn btn-primary btn-sm">Start an RFP</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><path d="M0 1h18M0 7h18M0 13h18" stroke="#FFFFFF" stroke-width="1.6"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="wrap">
+    <div class="mobile-drawer-head">
+      <span class="brand-word">Octa<span style="color:var(--cyan-dark)">span</span></span>
+      <button id="drawerClose" aria-label="Close menu" style="background:none;border:none;font-size:26px;line-height:1;">&times;</button>
+    </div>
+    <div id="mobileAccordions"></div>
+    <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
+      <a href="contact.html" class="btn btn-outline btn-block">Contact us</a>
+      <a href="contact.html?tab=rfp-form" class="btn btn-primary btn-block">Start an RFP</a>
+    </div>
+  </div>
+</div>
+
+
+<main id="main">
+<section class="page-body" id="page-home">
+
+  <div class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Cybersecurity Consulting &amp; Product Engineering</span>
+        <h1>Security built for what your business does next.</h1>
+        <p class="lede">Octaspan pairs senior consulting talent with in-house security products, so the recommendations we make are the same ones we operate ourselves — from Zero Trust architecture to identity, cloud, and threat detection.</p>
+        <div class="hero-ctas">
+          <a href="contact.html?tab=rfp-form" class="btn btn-primary">Start an RFP</a>
+          <a href="services.html" class="btn btn-outline on-dark">Explore our services</a>
+        </div>
+        <div class="hero-stats">
+          <div><b>120+</b><span>engagements delivered</span></div>
+          <div><b>18</b><span>countries served</span></div>
+          <div><b>24/7</b><span>threat monitoring</span></div>
+          <div><b>4</b><span>global delivery hubs</span></div>
+        </div>
+      </div>
+      <div class="scan-panel">
+        <div class="scan-head"><span>LIVE POSTURE SNAPSHOT</span><span><span class="pulse-dot"></span>monitoring</span></div>
+        <div class="scan-line"><span>External attack surface</span><span class="tag tag-ok">142 assets clear</span></div>
+        <div class="scan-line"><span>Exposed admin endpoints</span><span class="tag tag-crit">2 findings</span></div>
+        <div class="scan-line"><span>MFA coverage (workforce)</span><span class="tag tag-warn">91%</span></div>
+        <div class="scan-line"><span>Third-party OAuth grants</span><span class="tag tag-warn">6 to review</span></div>
+        <div class="scan-line"><span>Certificates expiring &lt;30d</span><span class="tag tag-ok">0</span></div>
+        <div class="scan-foot"><span>sample.octaspan.io/scan</span><span>updated 2m ago</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:30px;">
+        <div style="margin-bottom:0;">
+          <span class="eyebrow">What we do</span>
+          <h2>Eight practice areas. One accountable team.</h2>
+          <p>From detection to boardroom strategy, every engagement is delivered by the same group that will still be there for the next incident.</p>
+        </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="practicesPrev" aria-label="Scroll left">&#8249;</button>
+          <button class="slider-btn" id="practicesNext" aria-label="Scroll right">&#8250;</button>
+        </div>
+      </div>
+
+      <div class="practice-slider" id="practiceSlider">
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 5-3.4 8.4-7 10-3.6-1.6-7-5-7-10V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+          <h3>Cyber Defense</h3>
+          <p>Threat detection, incident response, and network security for environments that can't afford downtime.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16M8 19v-6m4 6V9m4 10v-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>Analytics &amp; Automation</h3>
+          <p>SIEM/SOAR and AI-driven anomaly detection that turn signal overload into prioritized, actionable response.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18a4 4 0 01-.6-7.96A5.5 5.5 0 0117.5 9a4.5 4.5 0 01-.5 9H7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+          <h3>Cloud &amp; Data Security</h3>
+          <p>CASB, CSPM, and CWPP programs covering sanctioned and unsanctioned SaaS, wherever your data lives.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <h3>Identity Protection</h3>
+          <p>IAM, PAM, and passwordless authentication design, backed by continuous audit and assurance.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 6l-4 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>Applications &amp; DevSecOps Pipeline</h3>
+          <p>Secure CI/CD, API security, and application security testing baked into the pipeline, not bolted on after.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M17 13v3m0 0v3m0-3h3m-3 0h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <h3>Infrastructure &amp; Zero Trust Architecture</h3>
+          <p>Micro-segmentation, policy enforcement, and network redesign built on NIST SP 800-207 principles.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10l8-6 8 6v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 20v-6h6v6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+          <h3>Consulting &amp; Strategy</h3>
+          <p>M&amp;A due diligence and governance frameworks mapped to ISO, NIST, GDPR, and DPDP.</p>
+        </a>
+        <a href="services.html" class="practice-card">
+          <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M12 4v2.4M12 17.6V20M4 12h2.4M17.6 12H20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <h3>Threat Intelligence</h3>
+          <p>IOC feeds, attack-surface mapping, and proactive defense built from research, not just vendor advisories.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-band section-tight">
+    <div class="wrap grid">
+      <div><b>62%</b><span>faster mean time to detect after ITDR rollout</span></div>
+      <div><b>3.2x</b><span>reduction in standing privileged access</span></div>
+      <div><b>98%</b><span>client retention across active engagements</span></div>
+      <div><b>40+</b><span>compliance frameworks supported</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Products</span>
+        <h2>Software we build, run, and stand behind.</h2>
+        <p>Our consultants use these same products in client engagements — they aren't shelfware.</p>
+      </div>
+      <div class="grid g2">
+        <div class="product-card">
+          <div class="pc-top">
+            <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l7 3.2v5.3c0 5-3 8.6-7 10.5-4-1.9-7-5.5-7-10.5V5.7l7-3.2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 13.2V16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="kicker">Product</span>
+            <h3>PrivioVault</h3>
+            <p>Zero-trust privilege management for servers, networks, and IoT — enforced across every multi-cloud endpoint you own.</p>
+          </div>
+          <div class="pc-bottom"><a href="products.html" class="btn-text">See details</a></div>
+        </div>
+        <div class="product-card">
+          <div class="pc-top">
+            <span class="pc-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4" width="17" height="13" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 8.5h17" stroke="currentColor" stroke-width="1.6"/><path d="M7 11.3l1.6 1.6L11.5 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 11.3h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="kicker">Product</span>
+            <h3>Vexify</h3>
+            <p>Turn static, noisy SBOMs into dynamic, build-safe security context by mapping runtime reachability to your supply chain.</p>
+          </div>
+          <div class="pc-bottom"><a href="products.html" class="btn-text">See details</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-tight" style="background:var(--paper-alt);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+    <div class="wrap">
+      <div class="grid g2">
+        <div class="testi">
+          <p>"Octaspan didn't just hand us a report. They rebuilt our identity architecture and were still in the room eight months later when we tested it."</p>
+          <footer>CISO, regional banking group</footer>
+        </div>
+        <div class="testi">
+          <p>"The Courses program upskilled our whole platform team on secure-by-design practices in under a quarter."</p>
+          <footer>VP Engineering, healthcare technology company</footer>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <div class="newsletter">
+        <div class="newsletter-inline">
+          <div>
+            <span class="eyebrow" style="color:var(--cyan)">Stay informed</span>
+            <h3 style="margin-top:8px;">Security advisories and research, monthly.</h3>
+            <p>Join the Octaspan newsletter for threat research, regulatory updates, and Courses programs. No spam, unsubscribe anytime.</p>
+          </div>
+          <form class="nl-form-wrap" data-newsletter-form>
+            <div class="nl-form">
+              <label class="sr-only" for="nl-home-email">Email address</label>
+              <input type="email" id="nl-home-email" placeholder="you@company.com" required>
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </div>
+            <div class="nl-checks">
+              <label><input type="checkbox" checked value="advisories"> Security advisories</label>
+              <label><input type="checkbox" value="research"> Research &amp; insights</label>
+              <label><input type="checkbox" value="courses"> Course updates</label>
+            </div>
+            <p class="nl-msg" role="status"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+<!-- /PAGE: HOME -->
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-top">
+
+    <div class="footer-cols">
+      <div class="footer-brand">
+        <img src="assets/logo.png" alt="Octaspan Cybersecurity Solutions" style="height:56px;width:auto;margin-bottom:16px;">
+        <p>Octaspan Cybersecurity Solutions — consulting and product engineering for regulated, high-stakes environments.</p>
+      </div>
+      <div>
+        <h5>What We Do</h5>
+        <ul>
+          <li><a href="services.html">Cyber Defense</a></li>
+          <li><a href="services.html">Analytics &amp; Automation</a></li>
+          <li><a href="services.html">Cloud &amp; Data Security</a></li>
+          <li><a href="services.html">Identity Protection</a></li>
+          <li><a href="services.html">Consulting &amp; Strategy</a></li>
+          <li><a href="services.html">Threat Intelligence</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Products</h5>
+        <ul>
+          <li><a href="products.html">PrivioVault</a></li>
+          <li><a href="products.html">Vexify</a></li>
+          <li><a href="products.html">Security Tools</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Industries</h5>
+        <ul>
+          <li><a href="industries.html">Financial Services</a></li>
+          <li><a href="industries.html">Healthcare</a></li>
+          <li><a href="industries.html">Government &amp; Public Sector</a></li>
+          <li><a href="industries.html">Consumer &amp; Retail</a></li>
+          <li><a href="industries.html">Energy &amp; Industrials</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Courses &amp; Insights</h5>
+        <ul>
+          <li><a href="courses.html">Learning Programs</a></li>
+          <li><a href="courses.html">Corporate Training</a></li>
+          <li><a href="insights.html">Featured Research</a></li>
+          <li><a href="knowledge.html">Knowledge Hub</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <ul>
+          <li><a href="about.html">Who We Are</a></li>
+          <li><a href="about.html">Press Room</a></li>
+          <li><a href="about.html">Careers</a></li>
+          <li><a href="about.html">Partner With Us</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="contact.html?tab=rfp-form">Start an RFP</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap social-row">
+    <span class="label">Follow Octaspan</span>
+    <div class="social-icons">
+      <a href="https://www.linkedin.com" target="_blank" rel="noopener" aria-label="Octaspan on LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 11-.02 5 2.5 2.5 0 01.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.6c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.16 1.46-2.16 2.96V21H9z"/></svg>
+      </a>
+      <a href="https://www.facebook.com" target="_blank" rel="noopener" aria-label="Octaspan on Facebook">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.4c0-.87.24-1.46 1.5-1.46H16.5V4.35C16.24 4.32 15.32 4.24 14.25 4.24c-2.23 0-3.75 1.36-3.75 3.86V10.5H8v3h2.5V21z"/></svg>
+      </a>
+      <a href="https://www.instagram.com" target="_blank" rel="noopener" aria-label="Octaspan on Instagram">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.7"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.youtube.com" target="_blank" rel="noopener" aria-label="Octaspan on YouTube">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="2.5" y="5.5" width="19" height="13" rx="3.5" stroke="currentColor" stroke-width="1.7"/><path d="M10.3 9.3l4.8 2.7-4.8 2.7z" fill="currentColor"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap footer-bottom">
+    <span>&copy; <span id="year"></span> Octaspan Cybersecurity Solutions. All rights reserved.</span>
+    <div class="legal-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Use</a>
+      <a href="cookies.html">Cookie Policy</a>
+    </div>
+  </div>
+</footer>
+
+
+<div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent" aria-describedby="cookieText">
+  <div class="cookie-inner">
+    <p id="cookieText">
+      Octaspan cares about your privacy and enables you to choose the types of cookies we can use when you visit our website. You may
+      use the "<a href="#" id="cookieManageLink">Manage Cookie Settings</a>" functionality in the banner and/or footer of the website to change our default settings. We use
+      cookies to enhance your experience on our website. They also assist us in improving the website's performance, delivering relevant
+      content to you, and enabling you to share content on social networks. Choosing not to allow the use of certain cookies may
+      consequently affect your browsing experience and limit the availability of some services.<br><br>
+      Your choices will be recorded by Octaspan for a duration of 3 months, after which you will be required to provide your preferences again.<br>
+      If you wish to know the detailed list of cookies under each category used on the website, you may find it in the <a href="cookies.html">Cookie Policy</a>.
+    </p>
+    <div class="cookie-actions">
+      <button type="button" class="cookie-btn" id="cookieAccept">Accept</button>
+      <button type="button" class="cookie-btn" id="cookieManage">Manage Settings</button>
+      <button type="button" class="cookie-btn" id="cookieDecline">Decline All</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie preferences panel -->
+<div class="cookie-modal-overlay" id="cookieModalOverlay">
+  <div class="cookie-modal" role="dialog" aria-label="Manage cookie settings">
+    <h3>Manage Cookie Settings</h3>
+    <p>Choose which categories of cookies you're comfortable with. Essential cookies can't be turned off since the site relies on them to function.</p>
+    <div class="cookie-pref-row">
+      <div><strong>Essential</strong><span>Required for core site functionality and security. Always on.</span></div>
+      <label class="switch"><input type="checkbox" checked disabled><span class="slider"></span></label>
+    </div>
+    <div class="cookie-pref-row">
+      <div><strong>Preference</strong><span>Remembers your language and region choices.</span></div>
+      <label class="switch"><input type="checkbox" id="prefPreference" checked><span class="slider"></span></label>
+    </div>
+    <div class="cookie-pref-row">
+      <div><strong>Analytics</strong><span>Helps us understand which content is useful, in aggregate.</span></div>
+      <label class="switch"><input type="checkbox" id="prefAnalytics" checked><span class="slider"></span></label>
+    </div>
+    <div class="cookie-pref-row">
+      <div><strong>Social Media</strong><span>Enables sharing content to LinkedIn, Facebook, and other networks.</span></div>
+      <label class="switch"><input type="checkbox" id="prefSocial"><span class="slider"></span></label>
+    </div>
+    <div class="cookie-modal-actions">
+      <button type="button" class="btn btn-outline" id="cookieModalClose">Cancel</button>
+      <button type="button" class="btn btn-primary" id="cookieModalSave">Save Preferences</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
