@@ -112,7 +112,7 @@ function buildMobileAccordions(){
   if(holder.dataset.built) return;
   holder.dataset.built = '1';
   const sections = [
-    {title:'Who Are We', href:'about.html', links:['Purpose & Values','Our Impact','Our People','Governance','Awards & Recognition','Press Room','Partner With Us','Contact Us']},
+    {title:'Who Are We', href:'about.html', links:['Purpose & Values','Our Impact','Our People','Governance','Awards & Recognition','Press Room','Contact Us']},
     {title:'What We Do', href:'services.html', links:['Cyber Defense','Analytics & Automation','Cloud & Data Security','Identity Protection','Applications & DevSecOps Pipeline','Infrastructure & Zero Trust Architecture','Consulting & Strategy','Threat Intelligence']},
     {title:'Our Thinking', href:'insights.html', links:['Overview','Featured Research','Reports & Survey','Banking','Telecom']},
     {title:'Knowledge Hub', href:'knowledge.html', links:['Case Studies','Whitepapers & Research Reports','Infographics','Video Content','Podcasts','Free Tools','Downloadable Guides']},
@@ -244,6 +244,19 @@ function regionFor(country){
   };
   return map[country] || 'Global Response Team';
 }
+
+/* shared helpers */
+function fileToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* check-chip toggle (partner form) */
+document.querySelectorAll('.check-chip input').forEach(i=>{i.addEventListener('change',()=>{ if(i.type==='radio'){document.querySelectorAll('.check-chip input[name="'+i.name+'"]').forEach(o=>o.parentElement.classList.toggle('checked',o.checked));} else {i.parentElement.classList.toggle('checked',i.checked);} });});
 
 if(document.getElementById('contactForm')){
 /* ---------------- CONTACT FORM ---------------- */
@@ -434,14 +447,6 @@ function renderFileList(){
   });
 }
 
-function fileToBase64(file){
-  return new Promise((resolve, reject)=>{
-    const reader = new FileReader();
-    reader.onload = ()=> resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 /* ---- RFP submit ---- */
 rfpForm.addEventListener('submit', async (e)=>{
@@ -538,3 +543,111 @@ renderWizardNav();
   next.addEventListener('click', ()=> slider.scrollBy({left: scrollAmount(), behavior:'smooth'}));
 })();
 
+
+/* ---------------- PARTNER FORM ---------------- */
+if(document.getElementById('partnerForm')){
+(function(){
+  const form = document.getElementById('partnerForm');
+  const TOTAL = 4; let step = 1;
+  const files = {profile:null, brochure:null};
+  const $ = id => document.getElementById(id);
+  const ext = n => { const m=n.toLowerCase().match(/\.[a-z0-9]+$/); return m?m[0]:''; };
+  const size = b => b<1048576 ? (b/1024).toFixed(0)+' KB' : (b/1048576).toFixed(1)+' MB';
+
+  function render(){
+    document.querySelectorAll('#partnerForm .wizard-panel').forEach(p=>p.classList.toggle('active', Number(p.dataset.panel)===step));
+    document.querySelectorAll('#pfWizardSteps .w-step').forEach(s=>{const n=Number(s.dataset.step); s.classList.toggle('active',n===step); s.classList.toggle('done',n<step);});
+    $('pfWizardBack').style.visibility = step===1?'hidden':'visible';
+    $('pfWizardNext').style.display = step===TOTAL?'none':'inline-flex';
+    $('pfWizardNav').style.display = 'flex';
+    document.querySelector('.form-shell').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function valid(){
+    const panel = document.querySelector('#partnerForm .wizard-panel[data-panel="'+step+'"]');
+    const seen = {};
+    for(const f of panel.querySelectorAll('[required]')){
+      if(f.type==='radio'){
+        if(seen[f.name]) continue; seen[f.name]=1;
+        if(!panel.querySelector('input[name="'+f.name+'"]:checked')){
+          const m=$('pfMsg'); m.textContent='Please choose an option for: '+(f.dataset.label||f.name); m.className='nl-msg show err';
+          f.closest('.field').scrollIntoView({block:'center'}); return false;
+        }
+      } else if(f.type==='checkbox'){ if(!f.checked){f.reportValidity&&f.reportValidity(); f.focus(); return false;} }
+      else if(!String(f.value||'').trim()){ f.reportValidity&&f.reportValidity(); f.focus(); return false; }
+      else if(f.type==='email' && f.checkValidity && !f.checkValidity()){ f.reportValidity(); return false; }
+    }
+    $('pfMsg').className='nl-msg'; return true;
+  }
+  $('pfWizardNext').addEventListener('click',()=>{ if(valid() && step<TOTAL){step++;render();} });
+  $('pfWizardBack').addEventListener('click',()=>{ if(step>1){step--;render();} });
+
+  function setupUpload(key, accept){
+    const dz=$('dz-'+key), inp=$('in-'+key), list=$('list-'+key);
+    function paint(){
+      list.innerHTML='';
+      const f=files[key]; if(!f) return;
+      const div=document.createElement('div'); div.className='file-item'+(f.error?' fi-error':'');
+      div.innerHTML='<div><div class="fi-name"></div><div class="fi-meta"></div></div><button type="button" class="fi-remove">Remove</button>';
+      div.querySelector('.fi-name').textContent=f.file.name;
+      div.querySelector('.fi-meta').textContent=f.error||(size(f.file.size)+' · '+ext(f.file.name).slice(1).toUpperCase());
+      div.querySelector('button').addEventListener('click',()=>{files[key]=null;paint();});
+      list.appendChild(div);
+    }
+    function take(fl){
+      if(!fl||!fl.length) return; const file=fl[0]; let error=null;
+      if(file.size>CONFIG.MAX_FILE_MB*1048576) error='Exceeds '+CONFIG.MAX_FILE_MB+'MB limit';
+      else if(!accept.includes(ext(file.name))) error='Unsupported file type';
+      files[key]={file,error}; inp.value=''; paint();
+    }
+    $('choose-'+key).addEventListener('click',()=>inp.click());
+    inp.addEventListener('change',e=>take(e.target.files));
+    ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
+    dz.addEventListener('drop',e=>take(e.dataTransfer.files));
+  }
+  setupUpload('profile',['.pdf','.ppt','.pptx','.doc','.docx']);
+  setupUpload('brochure',['.pdf']);
+
+  form.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const msg=$('pfMsg'); msg.className='nl-msg';
+    if(!valid()) return;
+    for(const k of ['profile','brochure']) if(files[k]&&files[k].error){ msg.textContent='Please fix or remove the invalid '+k+' file.'; msg.className='nl-msg show err'; return; }
+    const btn=$('partnerSubmitBtn'); btn.disabled=true; btn.textContent='Submitting...';
+    const fd=new FormData(form);
+    const multi=n=>fd.getAll(n+'[]');
+    const list=[];
+    try{
+      for(const k of ['profile','brochure']){
+        const f=files[k]; if(!f) continue;
+        if(!CONFIG.DEMO_MODE) list.push({kind:k,name:f.file.name,mimeType:f.file.type||'application/octet-stream',size:f.file.size,base64:await fileToBase64(f.file)});
+        else list.push({kind:k,name:f.file.name,size:f.file.size});
+      }
+    }catch(err){ msg.textContent='Could not read an attached file. Please try again.'; msg.className='nl-msg show err'; btn.disabled=false; btn.textContent='Submit Partnership Application'; return; }
+    const payload={
+      formType:'partner', partnerType:fd.get('partnerType'),
+      companyName:fd.get('companyName'), website:fd.get('website'), companyLinkedIn:fd.get('companyLinkedIn'),
+      country:fd.get('country'), city:fd.get('city'), companyType:fd.get('companyType'), companySize:fd.get('companySize'), yearEstablished:fd.get('yearEstablished'),
+      contactPerson:fd.get('contactPerson'), designation:fd.get('designation'), email:fd.get('email'), phone:fd.get('phone'), linkedIn:fd.get('linkedIn'),
+      partnershipAreas:multi('partnershipAreas'), productName:fd.get('productName'), productDescription:fd.get('productDescription'),
+      customerSegment:multi('customerSegment'), deploymentModel:multi('deploymentModel'), techSupport:multi('techSupport'), certifications:fd.get('certifications'),
+      teamSize:fd.get('teamSize'), deliveryCapability:multi('deliveryCapability'),
+      partnershipModel:multi('partnershipModel'), lookingFor:multi('lookingFor'), currentMarkets:multi('currentMarkets'),
+      customerCount:fd.get('customerCount'), enterpriseCustomerCount:fd.get('enterpriseCustomerCount'),
+      existingPartnerships:fd.get('existingPartnerships'), existingPartnershipsDetail:fd.get('existingPartnershipsDetail'),
+      partnershipProposal:fd.get('partnershipProposal'), authorized:fd.get('authorized'),
+      preferredEngagement:multi('preferredEngagement'), timeframe:fd.get('timeframe'), heardFrom:fd.get('heardFrom'),
+      files:list, sourcePage:'partner-form.html', submittedAt:new Date().toISOString()
+    };
+    const result=await submitToSheets(payload);
+    btn.disabled=false; btn.textContent='Submit Partnership Application';
+    if(result.ok){
+      $('pfRef').textContent=refNumber('PTR');
+      $('pfWizardSteps').style.display='none'; form.style.display='none'; $('pfWizardNav').style.display='none';
+      $('partnerConfirm').style.display='block';
+      document.querySelector('.form-shell').scrollIntoView({behavior:'smooth',block:'start'});
+    } else { msg.textContent=result.message; msg.className='nl-msg show err'; }
+  });
+  render();
+})();
+}
