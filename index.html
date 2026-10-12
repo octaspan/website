@@ -239,14 +239,10 @@
           <div><b>4</b><span>global delivery hubs</span></div>
         </div>
       </div>
-      <div class="scan-panel">
-        <div class="scan-head"><span>LIVE POSTURE SNAPSHOT</span><span><span class="pulse-dot"></span>monitoring</span></div>
-        <div class="scan-line"><span>External attack surface</span><span class="tag tag-ok">142 assets clear</span></div>
-        <div class="scan-line"><span>Exposed admin endpoints</span><span class="tag tag-crit">2 findings</span></div>
-        <div class="scan-line"><span>MFA coverage (workforce)</span><span class="tag tag-warn">91%</span></div>
-        <div class="scan-line"><span>Third-party OAuth grants</span><span class="tag tag-warn">6 to review</span></div>
-        <div class="scan-line"><span>Certificates expiring &lt;30d</span><span class="tag tag-ok">0</span></div>
-        <div class="scan-foot"><span>sample.octaspan.io/scan</span><span>updated 2m ago</span></div>
+      <div class="scan-panel" id="threatFeed" aria-live="polite">
+        <div class="scan-head"><span>LIVE THREAT SNAPSHOT</span><span><span class="pulse-dot"></span><span id="tfStatus">loading…</span></span></div>
+        <div id="tfRows"><div class="scan-line"><span>Gathering the latest cybersecurity news…</span></div></div>
+        <div class="scan-foot"><span id="tfSources">Public security news feeds</span><span id="tfUpdated">refreshes every 3h</span></div>
       </div>
     </div>
   </div>

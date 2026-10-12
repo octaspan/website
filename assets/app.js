@@ -651,3 +651,40 @@ if(document.getElementById('partnerForm')){
   render();
 })();
 }
+
+/* ---------- Live threat feed (refreshes every 3 hours) ---------- */
+(function(){
+  const panel=document.getElementById('threatFeed'); if(!panel) return;
+  const REFRESH_MS=3*60*60*1000, ENDPOINT='/api/threat-feed';
+  const rows=document.getElementById('tfRows'), status=document.getElementById('tfStatus'),
+        updated=document.getElementById('tfUpdated'), sources=document.getElementById('tfSources'),
+        dot=panel.querySelector('.pulse-dot');
+  let lastOk=null;
+  const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ago=ts=>{const m=Math.max(0,Math.round((Date.now()-ts)/60000));
+    if(m<2) return 'just now'; if(m<60) return m+'m ago'; const h=Math.round(m/60); return h<24?h+'h ago':Math.round(h/24)+'d ago';};
+  const level=n=>n>=6?'tag-crit':n>=3?'tag-warn':'tag-ok';
+  function draw(d){
+    rows.innerHTML=d.sectors.map(s=>{
+      const link=s.latest
+        ? '<a href="'+esc(s.latest.url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(s.latest.source)+'">'+esc(s.latest.title)+'</a>'
+        : '<span class="tf-none">No new reports in the last '+d.windowHours+'h</span>';
+      return '<div class="tf-row"><div class="scan-line"><span>'+esc(s.label)+'</span><span class="tag '+level(s.count)+'">'+s.count+' in '+d.windowHours+'h</span></div>'+link+'</div>';
+    }).join('');
+    lastOk=new Date(d.generatedAt).getTime();
+    sources.textContent=d.sources.length+' sources · '+d.totalStories+' stories scanned';
+    status.textContent='live'; dot.classList.remove('stale'); tick();
+  }
+  function tick(){ if(lastOk) updated.textContent='updated '+ago(lastOk); }
+  async function load(){
+    try{
+      const r=await fetch(ENDPOINT,{cache:'no-cache'}); if(!r.ok) throw new Error(r.status);
+      draw(await r.json());
+    }catch(e){
+      status.textContent=lastOk?'stale':'offline'; dot.classList.add('stale');
+      if(!lastOk){ rows.innerHTML='<div class="scan-line"><span>Live feed temporarily unavailable. Retrying automatically.</span></div>'; }
+    }
+  }
+  load(); setInterval(load,REFRESH_MS); setInterval(tick,60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && lastOk && Date.now()-lastOk>REFRESH_MS) load(); });
+})();

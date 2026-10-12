@@ -593,3 +593,13 @@ footer.site-footer{background:var(--ink);color:#B9C4D6;padding-top:64px;}
  .hub-node{font-size:10px;min-width:70px;padding:6px 3px;}.hub-node .hn-ic{display:none;}.hub-center{font-size:11px;}
  .cta-band h2{font-size:24px;}.partner-hero h1{font-size:29px;}
 }
+
+/* Live threat feed widget */
+.tf-row{padding:9px 0;border-top:1px solid rgba(255,255,255,.08);}
+.tf-row:first-child{border-top:none;}
+.tf-row .scan-line{border:none;padding:0;}
+.tf-row a{display:block;margin-top:4px;color:#8FA1BC;font-size:11.5px;line-height:1.4;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tf-row a:hover,.tf-row a:focus-visible{color:#fff;text-decoration:underline;}
+.tf-row .tf-none{display:block;margin-top:4px;color:#6C7E99;font-size:11.5px;}
+.pulse-dot.stale{background:#D9A441;animation:none;}
+@media (max-width:600px){.tf-row a{white-space:normal;}}
