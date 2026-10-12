@@ -98,7 +98,7 @@ function doPost(e) {
 /** Lets you open the Web App URL directly in a browser to confirm it's live. */
 function doGet() {
   return ContentService.createTextOutput(
-    'Octaspan form-intake endpoint is live. POST only.'
+    'Octaspan form-intake endpoint is live (v2). POST only.'
   ).setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -247,8 +247,25 @@ function mimeFromExt(ext) {
 // Utilities
 // ---------------------------------------------------------------
 
+/**
+ * Returns the spreadsheet to write to. Works whether the script was created from inside a
+ * Sheet (Extensions > Apps Script) or as a standalone project: in the standalone case it
+ * finds or creates a spreadsheet called "Octaspan Website Submissions" and remembers its ID.
+ */
+function getSpreadsheet() {
+  let ss = null;
+  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (_) {}
+  if (ss) return ss;
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('SHEET_ID');
+  if (id) { try { return SpreadsheetApp.openById(id); } catch (_) {} }
+  ss = SpreadsheetApp.create('Octaspan Website Submissions');
+  props.setProperty('SHEET_ID', ss.getId());
+  return ss;
+}
+
 function getOrCreateSheet(name, headers) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
@@ -257,6 +274,22 @@ function getOrCreateSheet(name, headers) {
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
   }
   return sheet;
+}
+
+/**
+ * Run this ONCE from the Apps Script editor (select "testSetup" > Run). It forces Google's
+ * permission prompt (Sheets, Drive, Gmail), writes a test row to every tab, and logs the
+ * spreadsheet URL so you can confirm exactly where submissions are going.
+ */
+function testSetup() {
+  const ss = getSpreadsheet();
+  Object.keys(SHEETS).forEach((k) => {
+    safeAppend(getOrCreateSheet(SHEETS[k], HEADERS[k]), [new Date(), 'TEST ROW - safe to delete']);
+  });
+  getRootFolder(RFP_DRIVE_FOLDER_ID, RFP_DRIVE_FOLDER_NAME);
+  getRootFolder(PARTNER_DRIVE_FOLDER_ID, PARTNER_DRIVE_FOLDER_NAME);
+  if (NOTIFY_EMAIL) MailApp.sendEmail(NOTIFY_EMAIL, '[Octaspan website] setup test', 'Form intake is set up. Sheet: ' + ss.getUrl());
+  Logger.log('OK - submissions go to: ' + ss.getUrl());
 }
 
 /**
