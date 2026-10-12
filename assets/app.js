@@ -7,7 +7,7 @@ const CONFIG = {
   SHEETS_ENDPOINT: "https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec",
   DEMO_MODE: true, // set false once SHEETS_ENDPOINT is a real deployment
   MAX_FILE_MB: 25,
-  ACCEPTED_EXT: ['.pdf', '.doc', '.docx', '.xls', '.xlsx']
+  ACCEPTED_EXT: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.png', '.jpg', '.jpeg']
 };
 
 document.getElementById('year').textContent = new Date().getFullYear();

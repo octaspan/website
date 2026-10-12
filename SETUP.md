@@ -15,6 +15,10 @@ Two files are involved:
 
 ## Step 1 — Create the Google Sheet
 
+> Sign in as **octaspan.cybersecurity@gmail.com** for every step below, so the Sheet, the Drive
+> folders and the script all belong to that account. Notification emails for new contact, RFP and
+> partner submissions are sent to the same address (`NOTIFY_EMAIL` in `Code.gs`).
+
 1. Go to [sheets.google.com](https://sheets.google.com) and create a **new blank spreadsheet**.
 2. Name it something like **"Octaspan Website Submissions"**.
 3. Leave it empty — the script will create its own tabs (`Newsletter Signups`,
@@ -35,7 +39,14 @@ Two files are involved:
 
 ---
 
-## Step 3 — Create a Google Drive folder for RFP files
+## Step 3 — (Optional) Drive folders for uploaded files
+
+**You can skip Steps 3 and 3b.** On the first upload the script automatically creates the folders
+"Octaspan RFP Attachments" and "Octaspan Partner Files" in your Drive. Uploaded documents and
+images are saved there and each file's link is written into the Sheet row. To use existing folders
+instead, follow the steps below.
+
+### Create a Google Drive folder for RFP files
 
 1. Go to [drive.google.com](https://drive.google.com) and create a new folder,
    e.g. **"Octaspan RFP Attachments"**.

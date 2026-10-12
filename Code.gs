@@ -9,11 +9,23 @@
  * ============================================================
  */
 
-/** Paste the Google Drive folder ID here (see SETUP.md Step 3). */
+/**
+ * Drive folders. Leave the IDs as-is and the script creates (and reuses) folders
+ * with these names in the owner's My Drive on the first file upload. To use an
+ * existing folder instead, paste its ID (the last part of the folder's URL).
+ */
 const RFP_DRIVE_FOLDER_ID = 'PASTE_YOUR_DRIVE_FOLDER_ID_HERE';
-
-/** Separate Drive folder for partner attachments (see SETUP.md Step 3b). */
+const RFP_DRIVE_FOLDER_NAME = 'Octaspan RFP Attachments';
 const PARTNER_DRIVE_FOLDER_ID = 'PASTE_YOUR_PARTNER_DRIVE_FOLDER_ID_HERE';
+const PARTNER_DRIVE_FOLDER_NAME = 'Octaspan Partner Files';
+
+/** Optional: an email address to notify about each new RFP / partner / contact submission. */
+const NOTIFY_EMAIL = 'octaspan.cybersecurity@gmail.com';
+
+/** Server-side file rules (the website enforces the same limits in the browser). */
+const MAX_FILE_BYTES = 25 * 1024 * 1024;
+const MAX_FILES = 10;
+const ALLOWED_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 
 /** Sheet tab names — created automatically on first submission if missing. */
 const SHEETS = {
@@ -56,7 +68,9 @@ const HEADERS = {
  * never read by the browser; we just need to not throw.
  */
 function doPost(e) {
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(30000); // serialize concurrent submissions so rows never interleave
     const payload = JSON.parse(e.postData.contents);
     const formType = payload.formType;
 
@@ -76,6 +90,8 @@ function doPost(e) {
   } catch (err) {
     logError(err, e);
     return jsonResponse({ ok: false, error: String(err) });
+  } finally {
+    try { lock.releaseLock(); } catch (_) {}
   }
 }
 
@@ -92,7 +108,7 @@ function doGet() {
 
 function handleNewsletter(payload) {
   const sheet = getOrCreateSheet(SHEETS.newsletter, HEADERS.newsletter);
-  sheet.appendRow([
+  safeAppend(sheet, [
     new Date(),
     payload.email || '',
     (payload.interests || []).join(', '),
@@ -102,7 +118,7 @@ function handleNewsletter(payload) {
 
 function handleContact(payload) {
   const sheet = getOrCreateSheet(SHEETS.contact, HEADERS.contact);
-  sheet.appendRow([
+  safeAppend(sheet, [
     new Date(),
     payload.topic || '',
     payload.firstName || '',
@@ -118,12 +134,13 @@ function handleContact(payload) {
     payload.preferredContact || '',
     payload.sourcePage || '',
   ]);
+  notify('New contact message: ' + (payload.topic || ''), payload.email, []);
 }
 
 function handleRfp(payload) {
-  const fileLinks = saveFilesToFolder(payload.files || [], RFP_DRIVE_FOLDER_ID, payload.orgName || 'Unknown', payload.email || '');
+  const fileLinks = saveFilesToFolder(payload.files || [], RFP_DRIVE_FOLDER_ID, RFP_DRIVE_FOLDER_NAME, payload.orgName || 'Unknown', payload.email || '');
   const sheet = getOrCreateSheet(SHEETS.rfp, HEADERS.rfp);
-  sheet.appendRow([
+  safeAppend(sheet, [
     new Date(),
     payload.country || '',
     payload.orgName || '',
@@ -149,13 +166,14 @@ function handleRfp(payload) {
     fileLinks.join('\n'),
     (payload.files || []).length,
   ]);
+  notify('New RFP: ' + (payload.orgName || ''), payload.email, fileLinks);
 }
 
 function handlePartner(payload) {
   const j = (arr) => (arr || []).join('; ');
-  const fileLinks = saveFilesToFolder(payload.files || [], PARTNER_DRIVE_FOLDER_ID, payload.companyName || 'Unknown', payload.email || '');
+  const fileLinks = saveFilesToFolder(payload.files || [], PARTNER_DRIVE_FOLDER_ID, PARTNER_DRIVE_FOLDER_NAME, payload.companyName || 'Unknown', payload.email || '');
   const sheet = getOrCreateSheet(SHEETS.partner, HEADERS.partner);
-  sheet.appendRow([
+  safeAppend(sheet, [
     new Date(), payload.partnerType || '', payload.companyName || '', payload.website || '',
     payload.companyLinkedIn || '', payload.country || '', payload.city || '', payload.companyType || '',
     payload.companySize || '', payload.yearEstablished || '', payload.contactPerson || '',
@@ -170,34 +188,59 @@ function handlePartner(payload) {
     payload.timeframe || '', payload.heardFrom || '',
     fileLinks.join('\n'), (payload.files || []).length,
   ]);
+  notify('New partner application: ' + (payload.companyName || ''), payload.email, fileLinks);
 }
 
 /**
- * Decodes each base64 file in the RFP payload and saves it to a
- * dated subfolder inside RFP_DRIVE_FOLDER_ID, named after the
- * organization and submitter email for easy identification.
- * Returns an array of shareable Drive links.
+ * Validates and decodes each base64 file in the payload (documents or images) and saves
+ * it to a dated subfolder of the target Drive folder, named after the organisation and
+ * submitter email. Returns one line per file: "<label>: <Drive link>".
+ * Rejected files are listed in the sheet as "(skipped: reason)" instead of failing the row.
  */
-function saveFilesToFolder(files, folderId, orgName, email) {
+function saveFilesToFolder(files, folderId, folderName, orgName, email) {
   if (!files.length) return [];
-  if (String(folderId).indexOf('PASTE_YOUR_') === 0) {
-    return ['(Drive folder not configured — see SETUP.md Step 3)'];
-  }
-
-  const rootFolder = DriveApp.getFolderById(folderId);
+  const rootFolder = getRootFolder(folderId, folderName);
   const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HHmm');
-  const safeOrg = (orgName || 'Unknown').replace(/[^a-zA-Z0-9 _-]/g, '').slice(0, 60);
-  const subfolder = rootFolder.createFolder(`${stamp} — ${safeOrg} (${email})`);
+  const safeOrg = String(orgName || 'Unknown').replace(/[^a-zA-Z0-9 _-]/g, '').slice(0, 60) || 'Unknown';
+  const safeMail = String(email || '').replace(/[^a-zA-Z0-9@._+-]/g, '').slice(0, 80);
+  let subfolder = null;
 
   const links = [];
-  files.forEach((f) => {
-    if (!f.base64) return; // no base64 present (e.g. DEMO_MODE payload) — skip
+  files.slice(0, MAX_FILES).forEach((f) => {
+    const name = String(f.name || 'upload').replace(/[\\/:*?"<>|\r\n]/g, '_').slice(0, 120);
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    if (!f.base64) { links.push('(skipped ' + name + ': no file data)'); return; }
+    if (ALLOWED_EXT.indexOf(ext) === -1) { links.push('(skipped ' + name + ': file type not allowed)'); return; }
     const bytes = Utilities.base64Decode(f.base64);
-    const blob = Utilities.newBlob(bytes, f.mimeType || 'application/octet-stream', f.name || 'upload');
+    if (bytes.length > MAX_FILE_BYTES) { links.push('(skipped ' + name + ': over 25MB)'); return; }
+    if (!subfolder) subfolder = rootFolder.createFolder(stamp + ' - ' + safeOrg + ' (' + safeMail + ')');
+    const blob = Utilities.newBlob(bytes, f.mimeType || mimeFromExt(ext), name);
     const driveFile = subfolder.createFile(blob);
-    links.push(driveFile.getUrl());
+    const label = f.kind ? String(f.kind).replace(/[^a-zA-Z ]/g, '') + ' - ' : '';
+    links.push(label + name + ': ' + driveFile.getUrl());
   });
+  if (files.length > MAX_FILES) links.push('(' + (files.length - MAX_FILES) + ' extra files skipped)');
   return links;
+}
+
+/** Uses the configured folder ID if set, otherwise finds-or-creates a folder by name. */
+function getRootFolder(folderId, folderName) {
+  if (folderId && String(folderId).indexOf('PASTE_YOUR_') !== 0) return DriveApp.getFolderById(folderId);
+  const it = DriveApp.getFoldersByName(folderName);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(folderName);
+}
+
+function mimeFromExt(ext) {
+  const map = {
+    pdf: 'application/pdf', doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xls: 'application/vnd.ms-excel',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ppt: 'application/vnd.ms-powerpoint',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif',
+  };
+  return map[ext] || 'application/octet-stream';
 }
 
 // ---------------------------------------------------------------
@@ -216,15 +259,37 @@ function getOrCreateSheet(name, headers) {
   return sheet;
 }
 
+/**
+ * Appends a row with every cell after the timestamp stored as plain text, so text typed
+ * by a website visitor (e.g. starting with "=" or "+") is never evaluated as a formula.
+ */
+function safeAppend(sheet, row) {
+  const r = sheet.getLastRow() + 1;
+  const range = sheet.getRange(r, 1, 1, row.length);
+  if (row.length > 1) sheet.getRange(r, 2, 1, row.length - 1).setNumberFormat('@');
+  range.setValues([row.map((v, i) => (i === 0 ? v : String(v === null || v === undefined ? '' : v)))]);
+}
+
+function notify(subject, replyTo, links) {
+  if (!NOTIFY_EMAIL) return;
+  try {
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL, subject: '[Octaspan website] ' + subject,
+      body: 'Details are in the Google Sheet.\n\nSubmitter: ' + (replyTo || 'n/a') +
+            (links && links.length ? '\n\nFiles:\n' + links.join('\n') : ''),
+    });
+  } catch (_) {}
+}
+
 function logUnknown(payload) {
   const sheet = getOrCreateSheet('Unrecognized Submissions', ['Timestamp', 'Raw Payload']);
-  sheet.appendRow([new Date(), JSON.stringify(payload)]);
+  safeAppend(sheet, [new Date(), JSON.stringify(payload)]);
 }
 
 function logError(err, e) {
   try {
     const sheet = getOrCreateSheet('Errors', ['Timestamp', 'Error', 'Raw Post Data']);
-    sheet.appendRow([new Date(), String(err), e && e.postData ? e.postData.contents : '(none)']);
+    safeAppend(sheet, [new Date(), String(err), e && e.postData ? e.postData.contents.slice(0, 2000) : '(none)']);
   } catch (_) {
     // If even error logging fails, there's nothing more we can do here.
   }
