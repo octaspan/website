@@ -53,7 +53,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     });
     closeModal();
     hideBanner();
-    toast('Cookie preferences saved.');
+    toast((window.OctaspanLocale && OctaspanLocale.t('saved')) || 'Cookie preferences saved.');
   });
 })();
 
