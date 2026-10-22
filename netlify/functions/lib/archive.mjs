@@ -7,6 +7,8 @@ const cfg = () => {
 };
 export const archiveEnabled = () => !!cfg();
 
+// Legacy keys are JWTs (sent as apikey + Bearer). New "sb_secret_..." keys are NOT JWTs: apikey header only.
+const authHeaders = (key) => (key.startsWith('sb_') ? { apikey: key } : { apikey: key, authorization: `Bearer ${key}` });
 const iso = (ms) => new Date(ms).toISOString();
 export function toRow(r) {
   return {
@@ -24,7 +26,7 @@ export async function archiveReports(reports, { fetchImpl = fetch } = {}) {
   const c = cfg(); if (!c || !reports.length) return { archived: 0 };
   const res = await fetchImpl(`${c.url}/rest/v1/threat_reports?on_conflict=id`, {
     method: 'POST',
-    headers: { apikey: c.key, authorization: `Bearer ${c.key}`, 'content-type': 'application/json', prefer: 'resolution=ignore-duplicates,return=minimal' },
+    headers: { ...authHeaders(c.key), 'content-type': 'application/json', prefer: 'resolution=ignore-duplicates,return=minimal' },
     body: JSON.stringify(reports.map(toRow)),
   });
   if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 160)}`);
@@ -37,8 +39,8 @@ export async function readDaily(days = 365, { fetchImpl = fetch } = {}) {
   const n = Math.min(Math.max(parseInt(days, 10) || 365, 1), 400);
   const since = new Date(Date.now() - n * 86400e3).toISOString().slice(0, 10);
   const res = await fetchImpl(`${c.url}/rest/v1/threat_daily?day=gte.${since}&order=day.asc&limit=20000`, {
-    headers: { apikey: c.key, authorization: `Bearer ${c.key}` },
+    headers: authHeaders(c.key),
   });
-  if (!res.ok) throw new Error(`supabase ${res.status}`);
+  if (!res.ok) throw new Error(`supabase ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return res.json();
 }

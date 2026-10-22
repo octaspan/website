@@ -156,5 +156,5 @@ test('archive: maps a report to a row and posts only when configured', async () 
   delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_KEY;
   assert.equal(out.archived, 1);
   assert.match(seen.u, /threat_reports\?on_conflict=id$/);
-  assert.equal(seen.o.headers.authorization, 'Bearer k');
+  assert.equal(seen.o.headers.authorization, 'Bearer k'); assert.equal(seen.o.headers.apikey, 'k');
 });

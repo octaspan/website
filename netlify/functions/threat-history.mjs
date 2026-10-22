@@ -3,9 +3,9 @@ import { readDaily, archiveEnabled } from './lib/archive.mjs';
 
 export default async (req) => {
   const days = new URL(req.url).searchParams.get('days') || 365;
-  const h = { 'content-type': 'application/json', 'cache-control': 'public, max-age=300', 'netlify-cdn-cache-control': 'public, s-maxage=3600' };
+  const h = { 'content-type': 'application/json', 'cache-control': 'no-store' };
   if (!archiveEnabled()) return new Response(JSON.stringify({ enabled: false, rows: [] }), { headers: h });
   try { return new Response(JSON.stringify({ enabled: true, rows: await readDaily(days) }), { headers: h }); }
-  catch (e) { return new Response(JSON.stringify({ enabled: true, error: 'archive unavailable', rows: [] }), { status: 502, headers: h }); }
+  catch (e) { return new Response(JSON.stringify({ enabled: true, error: 'archive unavailable', detail: String(e.message || e).slice(0, 220), rows: [] }), { status: 502, headers: h }); }
 };
 export const config = { path: '/api/threat/history' };
