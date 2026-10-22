@@ -1,8 +1,9 @@
 // Long-term archive in Supabase (Postgres, free tier). Optional: does nothing unless
 // SUPABASE_URL and SUPABASE_SERVICE_KEY are set in Netlify. Failures never break ingestion.
 const cfg = () => {
-  const url = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
-  const key = process.env.SUPABASE_SERVICE_KEY || '';
+  let url = (process.env.SUPABASE_URL || '').trim();
+  try { url = new URL(/^https?:\/\//i.test(url) ? url : 'https://' + url).origin; } catch { url = ''; } // keep only https://<ref>.supabase.co
+  const key = (process.env.SUPABASE_SERVICE_KEY || '').trim();
   return url && key ? { url, key } : null;
 };
 export const archiveEnabled = () => !!cfg();

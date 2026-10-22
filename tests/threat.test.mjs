@@ -158,3 +158,14 @@ test('archive: maps a report to a row and posts only when configured', async () 
   assert.match(seen.u, /threat_reports\?on_conflict=id$/);
   assert.equal(seen.o.headers.authorization, 'Bearer k'); assert.equal(seen.o.headers.apikey, 'k');
 });
+
+test('archive: SUPABASE_URL is normalised to its origin', async () => {
+  process.env.SUPABASE_SERVICE_KEY = 'k';
+  let seen;
+  for (const u of ['https://p.supabase.co/rest/v1/', 'p.supabase.co', ' https://p.supabase.co/ ']) {
+    process.env.SUPABASE_URL = u;
+    await archiveReports([{ id: 'a', sourceId: 'S', title: 't', url: 'u', publishedAt: 1, ingestedAt: 1 }], { fetchImpl: async (x) => { seen = x; return { ok: true }; } });
+    assert.equal(seen, 'https://p.supabase.co/rest/v1/threat_reports?on_conflict=id');
+  }
+  delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_KEY;
+});
