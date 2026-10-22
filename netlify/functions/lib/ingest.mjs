@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getJSON, setJSON } from './store.mjs';
+import { archiveReports } from './archive.mjs';
 import { DEFAULT_SOURCES, mergeRegistry, SEC_USER_AGENT } from './sources.mjs';
 import { parseFeed, parseSecSearch, canonicalUrl } from './parse.mjs';
 import { classify } from './classify.mjs';
@@ -96,6 +97,10 @@ export async function runIngest({ fetchImpl = fetch, now = Date.now(), force = f
     await setJSON('sources', registry);
     await setJSON('status', status);
     summary.total = reports.length;
+    try { // long-term archive (Supabase) — only reports first seen in this run; optional and never fatal
+      const fresh = reports.filter((r) => r.ingestedAt === now);
+      summary.archived = (await archiveReports(fresh, { fetchImpl })).archived;
+    } catch (e) { summary.archiveError = String(e.message || e).slice(0, 160); }
     return summary;
   } finally {
     await setJSON('lock', { at: 0 });

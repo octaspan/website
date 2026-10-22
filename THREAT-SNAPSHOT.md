@@ -38,3 +38,18 @@ See the "Methodology & sources" section on the page. In short: incidents are de-
 
 ## Tests
 `npm test` runs unit and end-to-end tests (parsers, classifier, de-duplication, aggregation, financial rules, failure isolation) using fixtures; no network is needed.
+
+## Long-term archive (optional, Supabase)
+
+The live dashboard keeps 35 days in Netlify Blobs. To keep ~1 year for analytics, every new report is also
+copied into a Supabase Postgres table after each 3-hourly ingest.
+
+1. Create a free project at supabase.com. In the SQL Editor run `supabase/schema.sql`.
+2. In Netlify: Site configuration > Environment variables, add `SUPABASE_URL` (Project Settings > API > Project URL)
+   and `SUPABASE_SERVICE_KEY` (the `service_role` key — server-side only, never in front-end code). Redeploy.
+3. `GET /api/threat/history?days=365` returns daily roll-ups (`threat_daily`) for 12-month trend charts;
+   raw rows live in `threat_reports` (query with SQL, Metabase, Looker Studio, etc.).
+
+Notes: ~100–300 reports/day is roughly 50–150 MB/year, inside the free 500 MB. Free projects pause after 7 days
+without activity; the 3-hourly writes keep it active. Roll-ups count reports, not de-duplicated incidents.
+Archive failures are logged in the ingest summary (`archiveError`) and never stop ingestion.

@@ -142,3 +142,19 @@ test('financial totals exclude demands/alleged/estimated and never double count 
   const snap = buildSnapshot({ reports, sources: mergeRegistry(null), status: { firstIngestAt: NOW, sources: {} }, now: NOW, query: {} });
   assert.deepEqual(snap.kpis.financial.value, [{ currency: 'USD', total: 5e6 }]);
 });
+
+import { toRow, archiveReports } from '../netlify/functions/lib/archive.mjs';
+test('archive: maps a report to a row and posts only when configured', async () => {
+  const r = { id: 'a1', sourceId: 'SRC-01', sourceName: 'X', title: 't', url: 'https://x/y', publishedAt: 1700000000000, ingestedAt: 1700000100000, sector: 'bfsi', attackTypes: ['ransomware'], cves: [], actors: [] };
+  const row = toRow(r);
+  assert.equal(row.published_at, '2023-11-14T22:13:20.000Z');
+  assert.deepEqual(row.attack_types, ['ransomware']);
+  assert.deepEqual(await archiveReports([r], { fetchImpl: () => { throw new Error('must not call'); } }), { archived: 0 });
+  process.env.SUPABASE_URL = 'https://p.supabase.co'; process.env.SUPABASE_SERVICE_KEY = 'k';
+  let seen;
+  const out = await archiveReports([r], { fetchImpl: async (u, o) => { seen = { u, o }; return { ok: true }; } });
+  delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_KEY;
+  assert.equal(out.archived, 1);
+  assert.match(seen.u, /threat_reports\?on_conflict=id$/);
+  assert.equal(seen.o.headers.authorization, 'Bearer k');
+});
