@@ -1,3 +1,4 @@
+const tr = (s) => (window.OctaspanI18n ? OctaspanI18n.tr(s) : s);
 /* ============================================================
    CONFIG — replace with your deployed Google Apps Script Web App URL.
    One Apps Script project can handle all three endpoints below
@@ -53,7 +54,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     });
     closeModal();
     hideBanner();
-    toast((window.OctaspanLocale && OctaspanLocale.t('saved')) || 'Cookie preferences saved.');
+    toast((window.OctaspanLocale && OctaspanLocale.t('saved')) || tr('Cookie preferences saved.'));
   });
 })();
 
@@ -185,22 +186,22 @@ document.querySelectorAll('[data-newsletter-form]').forEach(form=>{
     const msgEl = form.querySelector('.nl-msg');
     const btn = form.querySelector('button[type=submit]');
     if(!/^\S+@\S+\.\S+$/.test(email)){
-      msgEl.textContent = 'Please enter a valid email address.';
+      msgEl.textContent = tr('Please enter a valid email address.');
       msgEl.className = 'nl-msg show err';
       return;
     }
     const interests = Array.from(form.querySelectorAll('input[type=checkbox]:checked')).map(c=>c.value);
-    btn.disabled = true; btn.textContent = 'Subscribing...';
+    btn.disabled = true; btn.textContent = tr('Subscribing...');
     const payload = { formType:'newsletter', email, interests, page: location.pathname.split('/').pop() || 'index.html', submittedAt: new Date().toISOString() };
     const result = await submitToSheets(payload);
-    btn.disabled = false; btn.textContent = 'Subscribe';
+    btn.disabled = false; btn.textContent = tr('Subscribe');
     if(result.ok){
-      msgEl.textContent = 'Subscribed — check your inbox to confirm.';
+      msgEl.textContent = tr('Subscribed — check your inbox to confirm.');
       msgEl.className = 'nl-msg show ok';
       form.reset();
-      toast('You are subscribed to the Octaspan newsletter.');
+      toast(tr('You are subscribed to the Octaspan newsletter.'));
     } else {
-      msgEl.textContent = result.message || 'Something went wrong. Please try again.';
+      msgEl.textContent = result.message || tr('Something went wrong. Please try again.');
       msgEl.className = 'nl-msg show err';
     }
   });
@@ -230,7 +231,7 @@ async function submitToSheets(payload){
     return { ok:true };
   }catch(err){
     console.error('Sheets submit failed', err);
-    return { ok:false, message:'Could not reach the submission service. Please try again shortly.' };
+    return { ok:false, message:tr('Could not reach the submission service. Please try again shortly.') };
   }
 }
 
@@ -271,19 +272,19 @@ contactForm.addEventListener('submit', async (e)=>{
   const required = ['firstName','lastName','email','company','country','message'];
   for(const r of required){
     if(!fd.get(r) || !String(fd.get(r)).trim()){
-      msgEl.textContent = 'Please complete all required fields before submitting.';
+      msgEl.textContent = tr('Please complete all required fields before submitting.');
       msgEl.className = 'nl-msg show err';
       return;
     }
   }
   if(!document.getElementById('privacyConsent').checked){
-    msgEl.textContent = 'Please accept the Privacy Policy to continue.';
+    msgEl.textContent = tr('Please accept the Privacy Policy to continue.');
     msgEl.className = 'nl-msg show err';
     return;
   }
 
   const btn = document.getElementById('contactSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Sending...';
+  btn.disabled = true; btn.textContent = tr('Sending...');
 
   const payload = {
     formType:'contact',
@@ -299,7 +300,7 @@ contactForm.addEventListener('submit', async (e)=>{
   };
 
   const result = await submitToSheets(payload);
-  btn.disabled = false; btn.textContent = 'Send message';
+  btn.disabled = false; btn.textContent = tr('Send message');
 
   if(result.ok){
     const ref = refNumber('OCT');
@@ -335,7 +336,7 @@ function renderWizardNav(){
     navEl.style.display = 'none';
   } else {
     navEl.style.display = 'flex';
-    nextBtn.textContent = rfpStep === RFP_TOTAL_STEPS - 1 ? 'Review & Continue' : 'Continue';
+    nextBtn.textContent = rfpStep === RFP_TOTAL_STEPS - 1 ? tr('Review & Continue') : tr('Continue');
   }
 }
 function goToStep(n){
@@ -358,7 +359,7 @@ function currentPanelValid(){
     if(f.type !== 'checkbox' && !String(f.value||'').trim()){ f.reportValidity?.(); f.focus(); return false; }
   }
   if(rfpStep === 5 && rfpFiles.length === 0){
-    document.getElementById('fileErrorMsg').textContent = 'Please attach at least one RFP document before continuing.';
+    document.getElementById('fileErrorMsg').textContent = tr('Please attach at least one RFP document before continuing.');
     document.getElementById('fileErrorMsg').classList.add('show');
     return false;
   }
@@ -377,13 +378,13 @@ function buildReview(){
   const grid = document.getElementById('rfpReviewGrid');
   const rows = [
     ['Organization', fd.get('orgName') || '—'],
-    ['Country / Region', fd.get('rfpCountry') || '—'],
+    [tr('Country / Region'), fd.get('rfpCountry') || '—'],
     ['Contact', [fd.get('rfpFirstName'), fd.get('rfpLastName')].filter(Boolean).join(' ') || '—'],
     ['Email', fd.get('rfpEmail') || '—'],
-    ['Services required', fd.get('servicesRequired') || '—'],
-    ['Project title', fd.get('projectTitle') || '—'],
-    ['Estimated budget', fd.get('estimatedBudget') || 'Not specified'],
-    ['Files attached', String(rfpFiles.length)],
+    [tr('Services required'), fd.get('servicesRequired') || '—'],
+    [tr('Project title'), fd.get('projectTitle') || '—'],
+    [tr('Estimated budget'), fd.get('estimatedBudget') || tr('Not specified')],
+    [tr('Files attached'), String(rfpFiles.length)],
   ];
   grid.innerHTML = rows.map(r=>`<div class="confirm-item"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>`).join('');
 }
@@ -420,7 +421,7 @@ function handleFiles(fileListObj){
     const id = 'f' + Math.random().toString(36).slice(2, 9);
     const tooBig = file.size > CONFIG.MAX_FILE_MB * 1024 * 1024;
     const badType = !CONFIG.ACCEPTED_EXT.includes(ext);
-    const entry = { file, id, error: tooBig ? `Exceeds ${CONFIG.MAX_FILE_MB}MB limit` : (badType ? 'Unsupported file type' : null) };
+    const entry = { file, id, error: tooBig ? `Exceeds ${CONFIG.MAX_FILE_MB}MB limit` : (badType ? tr('Unsupported file type') : null) };
     rfpFiles.push(entry);
   });
   fileInput.value = '';
@@ -455,19 +456,19 @@ rfpForm.addEventListener('submit', async (e)=>{
   msgEl.textContent = ''; msgEl.className = 'nl-msg';
 
   if(!document.getElementById('rfpPrivacy').checked){
-    msgEl.textContent = 'Please accept the Privacy Policy and Terms of Use to continue.';
+    msgEl.textContent = tr('Please accept the Privacy Policy and Terms of Use to continue.');
     msgEl.className = 'nl-msg show err';
     return;
   }
   const validFiles = rfpFiles.filter(f=>!f.error);
   if(validFiles.length === 0){
-    msgEl.textContent = 'Please attach at least one valid RFP document.';
+    msgEl.textContent = tr('Please attach at least one valid RFP document.');
     msgEl.className = 'nl-msg show err';
     return;
   }
 
   const btn = document.getElementById('rfpSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Submitting...';
+  btn.disabled = true; btn.textContent = tr('Submitting...');
 
   const fd = new FormData(rfpForm);
   let filesPayload = [];
@@ -482,9 +483,9 @@ rfpForm.addEventListener('submit', async (e)=>{
     }
   }catch(err){
     console.error(err);
-    msgEl.textContent = 'Could not read one of the attached files. Please try again.';
+    msgEl.textContent = tr('Could not read one of the attached files. Please try again.');
     msgEl.className = 'nl-msg show err';
-    btn.disabled = false; btn.textContent = 'Submit RFP';
+    btn.disabled = false; btn.textContent = tr('Submit RFP');
     return;
   }
 
@@ -504,7 +505,7 @@ rfpForm.addEventListener('submit', async (e)=>{
   };
 
   const result = await submitToSheets(payload);
-  btn.disabled = false; btn.textContent = 'Submit RFP';
+  btn.disabled = false; btn.textContent = tr('Submit RFP');
 
   if(result.ok){
     const ref = refNumber('RFP');
@@ -569,7 +570,7 @@ if(document.getElementById('partnerForm')){
       if(f.type==='radio'){
         if(seen[f.name]) continue; seen[f.name]=1;
         if(!panel.querySelector('input[name="'+f.name+'"]:checked')){
-          const m=$('pfMsg'); m.textContent='Please choose an option for: '+(f.dataset.label||f.name); m.className='nl-msg show err';
+          const m=$('pfMsg'); m.textContent=tr('Please choose an option for:')+' '+(f.dataset.label||f.name); m.className='nl-msg show err';
           f.closest('.field').scrollIntoView({block:'center'}); return false;
         }
       } else if(f.type==='checkbox'){ if(!f.checked){f.reportValidity&&f.reportValidity(); f.focus(); return false;} }
@@ -596,7 +597,7 @@ if(document.getElementById('partnerForm')){
     function take(fl){
       if(!fl||!fl.length) return; const file=fl[0]; let error=null;
       if(file.size>CONFIG.MAX_FILE_MB*1048576) error='Exceeds '+CONFIG.MAX_FILE_MB+'MB limit';
-      else if(!accept.includes(ext(file.name))) error='Unsupported file type';
+      else if(!accept.includes(ext(file.name))) error=tr('Unsupported file type');
       files[key]={file,error}; inp.value=''; paint();
     }
     $('choose-'+key).addEventListener('click',()=>inp.click());
@@ -612,8 +613,8 @@ if(document.getElementById('partnerForm')){
     e.preventDefault();
     const msg=$('pfMsg'); msg.className='nl-msg';
     if(!valid()) return;
-    for(const k of ['profile','brochure']) if(files[k]&&files[k].error){ msg.textContent='Please fix or remove the invalid '+k+' file.'; msg.className='nl-msg show err'; return; }
-    const btn=$('partnerSubmitBtn'); btn.disabled=true; btn.textContent='Submitting...';
+    for(const k of ['profile','brochure']) if(files[k]&&files[k].error){ msg.textContent=tr('Please fix or remove the invalid file.'); msg.className='nl-msg show err'; return; }
+    const btn=$('partnerSubmitBtn'); btn.disabled=true; btn.textContent=tr('Submitting...');
     const fd=new FormData(form);
     const multi=n=>fd.getAll(n+'[]');
     const list=[];
@@ -623,7 +624,7 @@ if(document.getElementById('partnerForm')){
         if(!CONFIG.DEMO_MODE) list.push({kind:k,name:f.file.name,mimeType:f.file.type||'application/octet-stream',size:f.file.size,base64:await fileToBase64(f.file)});
         else list.push({kind:k,name:f.file.name,size:f.file.size});
       }
-    }catch(err){ msg.textContent='Could not read an attached file. Please try again.'; msg.className='nl-msg show err'; btn.disabled=false; btn.textContent='Submit Partnership Application'; return; }
+    }catch(err){ msg.textContent=tr('Could not read an attached file. Please try again.'); msg.className='nl-msg show err'; btn.disabled=false; btn.textContent=tr('Submit Partnership Application'); return; }
     const payload={
       formType:'partner', partnerType:fd.get('partnerType'),
       companyName:fd.get('companyName'), website:fd.get('website'), companyLinkedIn:fd.get('companyLinkedIn'),
@@ -640,7 +641,7 @@ if(document.getElementById('partnerForm')){
       files:list, sourcePage:'partner-form.html', submittedAt:new Date().toISOString()
     };
     const result=await submitToSheets(payload);
-    btn.disabled=false; btn.textContent='Submit Partnership Application';
+    btn.disabled=false; btn.textContent=tr('Submit Partnership Application');
     if(result.ok){
       $('pfRef').textContent=refNumber('PTR');
       $('pfWizardSteps').style.display='none'; form.style.display='none'; $('pfWizardNav').style.display='none';

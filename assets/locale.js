@@ -149,11 +149,19 @@
     }
   }
 
+  /* ---------- whole-page translation (assets/i18n/<lang>.json via assets/i18n.js) ---------- */
+  function translatePage(it) {
+    const de = document.documentElement, rtl = D.RTL.includes(it.lang);
+    de.lang = baseLang(it.lang) === 'zh' ? it.lang : baseLang(it.lang); de.dir = rtl ? 'rtl' : 'ltr';
+    if (window.OctaspanI18n) window.OctaspanI18n.apply(it.lang);
+  }
+
   function choose(it) {
     current = it; save(it); paintButton();
     document.documentElement.dataset.locale = it.iso + '-' + it.lang;
     closePanel();
     applyConsent(it);
+    translatePage(it);
     const banner = $('cookieBanner'); // the consent prompt reappears in the chosen language / regime
     if (banner) banner.classList.add('show');
     document.dispatchEvent(new CustomEvent('octaspan:localechange', { detail: { iso: it.iso, lang: it.lang, name: it.name } }));
@@ -162,5 +170,6 @@
   buildButton();
   current = load();
   paintButton(); applyConsent(current);
+  if (current.lang !== 'en') translatePage(current);
   window.OctaspanLocale = { t: (k) => t(k), search, choose, current: () => current, locations: items, open: openPanel };
 })();
