@@ -29,6 +29,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   function closeModal(){ overlay.classList.remove('show'); }
   function persist(consent){
     try{ localStorage.setItem(KEY, JSON.stringify(consent)); }catch(e){}
+    document.dispatchEvent(new CustomEvent('octaspan:consent', { detail: consent }));
   }
 
   if(isExpired){ showBanner(); }
