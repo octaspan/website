@@ -4,7 +4,7 @@
    3. If they later withdraw consent, collection stops and GA cookies are cleared. */
 (function () {
   'use strict';
-  var GA_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+  var GA_MEASUREMENT_ID = 'G-SD4KE9QQF5';
   if (!/^G-[A-Z0-9]{6,}$/.test(GA_MEASUREMENT_ID) || /X{6,}/.test(GA_MEASUREMENT_ID)) return; // not configured yet
   var KEY = 'octaspan_cookie_consent', loaded = false;
 
