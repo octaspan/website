@@ -43,6 +43,16 @@ document.getElementById('year').textContent = new Date().getFullYear();
     hideBanner();
   });
   document.getElementById('cookieManage').addEventListener('click', openModal);
+  // Footer link so visitors can review or change their cookie choice at any time
+  document.querySelectorAll('footer a[href="cookies.html"]').forEach((a)=>{
+    if(a.parentNode.querySelector('[data-cookie-settings]')) return;
+    const l = document.createElement('a'); l.href='#'; l.setAttribute('data-cookie-settings','');
+    const label = ()=> (window.OctaspanLocale && OctaspanLocale.t('manage')) || 'Manage Settings';
+    l.textContent = 'Cookie Settings';
+    l.addEventListener('click',(e)=>{ e.preventDefault(); openModal(); });
+    a.after(l);
+    document.addEventListener('octaspan:localechange',()=>{ l.textContent = label(); });
+  });
   document.getElementById('cookieManageLink').addEventListener('click', (e)=>{ e.preventDefault(); openModal(); });
   document.getElementById('cookieModalClose').addEventListener('click', closeModal);
   document.getElementById('cookieModalSave').addEventListener('click', ()=>{
