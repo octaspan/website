@@ -27,13 +27,16 @@ const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_FILES = 10;
 const ALLOWED_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'png', 'jpg', 'jpeg', 'webp', 'gif'];
 
+/** Name of the Google Sheet that receives every submission. */
+const SPREADSHEET_NAME = 'Octaspan Website Submissions';
+
 /** Sheet tab names — created automatically on first submission if missing. */
 const SHEETS = {
   newsletter: 'Newsletter Signups',
   contact: 'Contact Submissions',
   rfp: 'RFP Submissions',
   partner: 'Partner Applications',
-  feedback: 'Website Feedback',
+  feedback: 'FEEDBACK - Live Threat Snapshot',
 };
 
 /** Column headers for each tab, in order. Keep in sync with the payloads in index.html. */
@@ -283,7 +286,15 @@ function getSpreadsheet() {
   const props = PropertiesService.getScriptProperties();
   const id = props.getProperty('SHEET_ID');
   if (id) { try { return SpreadsheetApp.openById(id); } catch (_) {} }
-  ss = SpreadsheetApp.create('Octaspan Website Submissions');
+  // Reuse an existing spreadsheet with this exact name before creating a new one.
+  try {
+    const found = DriveApp.getFilesByName(SPREADSHEET_NAME);
+    while (found.hasNext()) {
+      const f = found.next();
+      if (f.getMimeType() === MimeType.GOOGLE_SHEETS && !f.isTrashed()) { ss = SpreadsheetApp.openById(f.getId()); props.setProperty('SHEET_ID', ss.getId()); return ss; }
+    }
+  } catch (_) {}
+  ss = SpreadsheetApp.create(SPREADSHEET_NAME);
   props.setProperty('SHEET_ID', ss.getId());
   return ss;
 }
