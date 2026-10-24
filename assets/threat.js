@@ -68,16 +68,53 @@
       const cls = o.change > 0 ? 'up' : o.change < 0 ? 'down' : '';
       return '<div class="c ' + cls + '">' + (o.change > 0 ? '▲ ' : o.change < 0 ? '▼ ' : '● ') + Math.abs(o.change) + '% vs previous ' + w + '</div>';
     };
-    const card = (title, o, desc) => '<article class="kpi"><h3>' + title + '</h3><div class="v">' + o.value + '</div><div class="d">' + desc + '</div>' + change(o) + '</article>';
+    const D = snap.kpiDetails || {};
+    const META = {
+      reports: { how: 'Every publication from the enabled sources in this window. Several reports on one story are counted here separately, but shown once in the feed.', act: { label: 'Show all reports in the feed', set: {} } },
+      confirmedIncidents: { how: 'Distinct incidents confirmed by the affected organisation, a regulator or a government advisory. Unverified claims are excluded.', act: { label: 'Filter feed: confirmed only', set: { verification: 'confirmed' } } },
+      apt: { how: 'Distinct campaigns or incidents attributed by the source to a nation-state or APT group.', act: { label: 'Filter feed: APT & espionage', set: { attack: 'apt' } } },
+      ransomware: { how: 'Distinct incidents reported as ransomware. A ransom demand alone is not treated as proof of payment.', act: { label: 'Filter feed: ransomware', set: { attack: 'ransomware' } } },
+      criticalVulns: { how: 'Distinct vulnerabilities rated critical, or reported as actively exploited.', act: { label: 'Filter feed: critical severity', set: { severity: 'critical' } } },
+    };
+    const pop = (key, o) => {
+      const d = D[key] || { items: [], breakdown: [] }, m = META[key];
+      let h = '<div class="pop" role="group" aria-label="' + esc(key) + ' details"><p class="pop-how">' + esc(m.how) + '</p>';
+      if (key === 'reports' && d.stories != null) h += '<p class="pop-line"><b>' + d.stories + '</b> distinct stories in this window</p>';
+      if (d.previous != null) h += '<p class="pop-line">Previous ' + esc(w) + ': <b>' + d.previous + '</b></p>';
+      (d.breakdown || []).forEach((b) => {
+        if (!b.rows.length) return;
+        h += '<h4>' + esc(b.title) + '</h4><ul class="pop-rows">' + b.rows.map((r) => '<li>' + (b.filter ? '<button type="button" class="pop-link" data-set-key="' + b.filter + '" data-set-val="' + esc(r.id) + '">' + esc(r.label) + '</button>' : '<span>' + esc(r.label) + '</span>') + '<b>' + r.n + '</b></li>').join('') + '</ul>';
+      });
+      if (d.items.length) h += '<h4>Latest</h4><ul class="pop-items">' + d.items.map((i) => '<li><a href="' + safeUrl(i.url) + '" target="_blank" rel="noopener noreferrer">' + esc(i.headline) + '</a><span>' + esc(i.source) + ' · ' + esc(ago(i.publishedAt)) + '</span></li>').join('') + '</ul>' + (d.more ? '<p class="pop-line">+ ' + d.more + ' more in the feed</p>' : '');
+      else h += '<p class="pop-line">Nothing in this window.</p>';
+      return h + '<button type="button" class="btn pop-act" data-act="' + key + '">' + esc(m.act.label) + ' →</button></div>';
+    };
+    const card = (key, title, o, desc) => '<article class="kpi" tabindex="0" data-kpi="' + key + '"><h3>' + title + '</h3><div class="v">' + o.value + '</div><div class="d">' + desc + '</div>' + change(o) + '<span class="kpi-hint" aria-hidden="true">Details ›</span>' + pop(key, o) + '</article>';
     const fin = k.financial.value;
     const finHtml = fin.length ? fin.slice(0, 3).map((f) => esc(money(f.total, f.currency))).join('<br>') : 'Not publicly disclosed';
+    const finPop = '<div class="pop" role="group" aria-label="financial details"><p class="pop-how">Only amounts a source explicitly ties to a cyber incident. Ransom demands, estimates and allegations are shown separately and never added to this total.</p>' +
+      (snap.financial.filter((f) => f.countedInTotal).slice(0, 4).map((f) => '<ul class="pop-items"><li><a href="' + safeUrl(f.url) + '" target="_blank" rel="noopener noreferrer">' + esc(f.headline) + '</a><span>' + esc(money(f.amount, f.currency)) + ' · ' + esc(f.typeLabel || '') + ' · ' + esc(f.source || '') + '</span></li></ul>').join('') || '<p class="pop-line">No qualifying amounts in this window.</p>') +
+      '<button type="button" class="btn pop-act" data-act="financial">See the full financial panel →</button></div>';
     $('kpis').innerHTML =
-      card('Reports analyzed', k.reports, 'Across ' + snap.health.sourcesEnabled + ' sources') +
-      card('Confirmed incidents', k.confirmedIncidents, 'Distinct, first-party confirmed') +
-      card('APT activity', k.apt, 'Incidents and campaigns') +
-      card('Ransomware activity', k.ransomware, 'Distinct reported incidents') +
-      card('Critical vulnerabilities', k.criticalVulns, 'Critical or actively exploited') +
-      '<article class="kpi"><h3>Disclosed financial impact</h3><div class="v small">' + finHtml + '</div><div class="d">Direct, reported amounts only</div><div class="c">Per currency, not converted</div></article>';
+      card('reports', 'Reports analyzed', k.reports, 'Across ' + snap.health.sourcesEnabled + ' sources') +
+      card('confirmedIncidents', 'Confirmed incidents', k.confirmedIncidents, 'Distinct, first-party confirmed') +
+      card('apt', 'APT activity', k.apt, 'Incidents and campaigns') +
+      card('ransomware', 'Ransomware activity', k.ransomware, 'Distinct reported incidents') +
+      card('criticalVulns', 'Critical vulnerabilities', k.criticalVulns, 'Critical or actively exploited') +
+      '<article class="kpi" tabindex="0" data-kpi="financial"><h3>Disclosed financial impact</h3><div class="v small">' + finHtml + '</div><div class="d">Direct, reported amounts only</div><div class="c">Per currency, not converted</div><span class="kpi-hint" aria-hidden="true">Details ›</span>' + finPop + '</article>';
+    $('kpis').querySelectorAll('.kpi').forEach((el) => {
+      el.addEventListener('click', (e) => { if (!e.target.closest('.pop')) { const o = el.classList.contains('open'); $('kpis').querySelectorAll('.kpi.open').forEach((x) => x.classList.remove('open')); if (!o) el.classList.add('open'); } });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Escape') { el.classList.remove('open'); el.blur(); } });
+    });
+    $('kpis').querySelectorAll('.pop-act').forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.act === 'financial') { $('financial').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      FILTERS.forEach((f) => (state[f] = undefined)); Object.assign(state, META[b.dataset.act].act.set);
+      load().then(() => $('feed').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }));
+    $('kpis').querySelectorAll('.pop-link').forEach((b) => b.addEventListener('click', () => {
+      FILTERS.forEach((f) => (state[f] = undefined)); state[b.dataset.setKey] = b.dataset.setVal;
+      load().then(() => $('feed').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }));
   }
 
   function barRow(kind, id, label, n, max, pressed) {

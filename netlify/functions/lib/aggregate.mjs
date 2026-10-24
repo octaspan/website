@@ -104,6 +104,32 @@ export function buildSnapshot({ reports, sources, status, now = Date.now(), quer
   };
 
   const tracked = clusters.filter(isTracked);
+  // Hover details for the KPI tiles: the exact items behind each number, a short breakdown, and the previous value.
+  const countBy = (list, keyFn, labelFn, n = 4) => {
+    const m = new Map(); list.forEach((x) => { const k = keyFn(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
+    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([id, c]) => ({ id, label: labelFn(id), n: c }));
+  };
+  const mini = (c) => ({ headline: c.headline, url: c.sources[0].url, source: c.sources[0].name, publishedAt: c.publishedAt, severity: c.severity, verification: c.verification });
+  const bySector = (set) => ({ title: 'Top sectors', filter: 'sector', rows: countBy(set, (c) => (c.sector !== 'other' ? c.sector : null), (id) => SECTOR_LABELS[id]) });
+  const kSets = {
+    reports: clusters,
+    confirmedIncidents: clusters.filter((c) => c.kind === 'incident' && c.verification === 'confirmed'),
+    apt: clusters.filter((c) => c.isApt),
+    ransomware: clusters.filter((c) => c.kind === 'incident' && c.attackTypes.includes('ransomware')),
+    criticalVulns: clusters.filter((c) => c.kind === 'vulnerability' && (c.severity === 'critical' || c.exploited)),
+  };
+  const srcName = Object.fromEntries(sources.map((x) => [x.source_id, x.name]));
+  const kpiDetails = {};
+  for (const [k, set] of Object.entries(kSets)) {
+    kpiDetails[k] = { previous: prevK ? prevK[k] : null, items: set.slice(0, 5).map(mini), more: Math.max(0, set.length - 5), breakdown: [] };
+  }
+  kpiDetails.reports.stories = clusters.length;
+  kpiDetails.reports.breakdown.push({ title: 'Top sources', filter: 'source', rows: countBy(cur, (r) => r.sourceId, (id) => srcName[id] || id, 5) });
+  kpiDetails.confirmedIncidents.breakdown.push(bySector(kSets.confirmedIncidents));
+  kpiDetails.apt.breakdown.push(bySector(kSets.apt), { title: 'Named actors', rows: countBy(kSets.apt.flatMap((c) => c.actors.map((a) => ({ a }))), (x) => x.a, (id) => id, 4) });
+  kpiDetails.ransomware.breakdown.push(bySector(kSets.ransomware));
+  kpiDetails.criticalVulns.breakdown.push({ title: 'Most-cited CVEs', rows: countBy(kSets.criticalVulns.flatMap((c) => c.cves.map((v) => ({ v }))), (x) => x.v, (id) => id, 4) },
+    { title: 'Actively exploited', rows: [{ id: 'exploited', label: 'Reported as exploited in the wild', n: kSets.criticalVulns.filter((c) => c.exploited).length }] });
   const sectors = [...SECTORS, SECTOR_OTHER].map((s) => ({
     id: s.id, label: s.label,
     incidents: tracked.filter((c) => c.sector === s.id).length,
@@ -171,7 +197,7 @@ export function buildSnapshot({ reports, sources, status, now = Date.now(), quer
         state: st[s.source_id] ? st[s.source_id].state || 'pending' : 'pending', lastSuccessAt: (st[s.source_id] || {}).last_success_at || null,
         lastError: (st[s.source_id] || {}).last_error || '', reports: reports.filter((r) => r.sourceId === s.source_id && r.publishedAt >= now - W).length })),
     },
-    kpis, sectors, attackTypes, regions, countries, origins: [...origins.entries()].map(([name, n]) => ({ name, incidents: n })),
+    kpis, kpiDetails, sectors, attackTypes, regions, countries, origins: [...origins.entries()].map(([name, n]) => ({ name, incidents: n })),
     feed, trends, financial: fin.slice(0, 40),
     options: {
       sectors: [...SECTORS, SECTOR_OTHER].map((s) => ({ id: s.id, label: s.label })),

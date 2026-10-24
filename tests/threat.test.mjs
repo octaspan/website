@@ -169,3 +169,15 @@ test('archive: SUPABASE_URL is normalised to its origin', async () => {
   }
   delete process.env.SUPABASE_URL; delete process.env.SUPABASE_SERVICE_KEY;
 });
+
+test('snapshot: kpiDetails lists the items behind each KPI', async () => {
+  const now = Date.now();
+  const src = { source_id: 'SRC-01', name: 'BleepingComputer', enabled: true, ingestion_method: 'rss', category: 'news' };
+  const c = classify({ title: 'LockBit ransomware hits regional hospital', summary: 'LockBit ransomware hits regional hospital', source: src });
+  const reports = [{ id: 'a', sourceId: 'SRC-01', sourceName: 'BleepingComputer', sourceCategory: 'news', title: 'LockBit ransomware hits regional hospital', url: 'https://x.test/a', publishedAt: now - 3600e3, ingestedAt: now, excerpt: '', ...c }];
+  clusterReports(reports);
+  const snap = buildSnapshot({ reports, sources: [src], status: { firstIngestAt: now - 9e9, lastSuccessAt: now, sources: {} }, now, query: { window: '72h' } });
+  assert.equal(snap.kpiDetails.ransomware.items.length, snap.kpis.ransomware.value);
+  assert.equal(snap.kpiDetails.reports.breakdown[0].rows[0].id, 'SRC-01');
+  assert.ok(snap.kpiDetails.ransomware.items.every((i) => /^https?:/.test(i.url)));
+});
