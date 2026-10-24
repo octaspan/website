@@ -143,6 +143,30 @@ export function buildSnapshot({ reports, sources, status, now = Date.now(), quer
     associated: attackSet.filter((c) => c.attackTypes.includes(a.id)).length,
   })).filter((a) => a.id !== 'other' || a.primary > 0).sort((a, b) => b.primary - a.primary);
 
+  // Detail view behind the "Attack types" tile: for each type, who is hit, how severe, how it evolved, and the stories themselves.
+  const nB = { '24h': 24, '72h': 12, '7d': 7, '30d': 30 }[wKey], bSize = W / nB, bStart = now - W;
+  const prevAttackSet = comparable ? buildClusters(prev).filter((c) => isTracked(c) || (c.kind === 'vulnerability' && c.exploited)) : null;
+  const tally = (list, fn, labelFn, n = 6) => countBy(list, fn, labelFn, n);
+  const attackDetails = {};
+  for (const a of attackTypes) {
+    const assoc = attackSet.filter((c) => c.attackTypes.includes(a.id));
+    const timeline = Array.from({ length: nB }, (_, i) => ({ t: bStart + i * bSize, n: 0 }));
+    assoc.forEach((c) => { const i = Math.min(nB - 1, Math.max(0, Math.floor((c.publishedAt - bStart) / bSize))); timeline[i].n++; });
+    attackDetails[a.id] = {
+      label: a.label, primary: a.primary, associated: a.associated,
+      previous: prevAttackSet ? prevAttackSet.filter((c) => c.attackTypes.includes(a.id)).length : null,
+      sectors: tally(assoc, (c) => c.sector, (id) => SECTOR_LABELS[id], 8),
+      regions: tally(assoc, (c) => c.region || 'Unspecified', (id) => id, 6),
+      countries: tally(assoc, (c) => c.country, (id) => id, 6),
+      severities: ['critical', 'high', 'medium', 'low', 'info'].map((id) => ({ id, n: assoc.filter((c) => c.severity === id).length })),
+      verifications: ['confirmed', 'reported', 'claimed'].map((id) => ({ id, n: assoc.filter((c) => c.verification === id).length })),
+      cves: tally(assoc.flatMap((c) => c.cves.map((v) => ({ v }))), (x) => x.v, (id) => id, 6),
+      actors: tally(assoc.flatMap((c) => c.actors.map((v) => ({ v }))), (x) => x.v, (id) => id, 6),
+      timeline,
+      items: assoc.slice(0, 10).map((c) => ({ ...mini(c), primary: c.primaryAttack === a.id, sector: c.sectorLabel, country: c.country, cves: c.cves.slice(0, 3), reportCount: c.reportCount, excerpt: c.excerpt })),
+    };
+  }
+
   const geoSet = tracked;
   const regions = [...REGIONS, 'Unspecified'].map((name) => ({
     name, incidents: geoSet.filter((c) => (c.region || 'Unspecified') === name).length,
@@ -197,7 +221,7 @@ export function buildSnapshot({ reports, sources, status, now = Date.now(), quer
         state: st[s.source_id] ? st[s.source_id].state || 'pending' : 'pending', lastSuccessAt: (st[s.source_id] || {}).last_success_at || null,
         lastError: (st[s.source_id] || {}).last_error || '', reports: reports.filter((r) => r.sourceId === s.source_id && r.publishedAt >= now - W).length })),
     },
-    kpis, kpiDetails, sectors, attackTypes, regions, countries, origins: [...origins.entries()].map(([name, n]) => ({ name, incidents: n })),
+    kpis, kpiDetails, attackDetails, sectors, attackTypes, regions, countries, origins: [...origins.entries()].map(([name, n]) => ({ name, incidents: n })),
     feed, trends, financial: fin.slice(0, 40),
     options: {
       sectors: [...SECTORS, SECTOR_OTHER].map((s) => ({ id: s.id, label: s.label })),

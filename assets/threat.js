@@ -138,8 +138,9 @@
     const segs = total ? rows.filter((a) => a.primary).map((a, i) => { const len = (a.primary / total) * C; const s = '<circle r="' + R + '" cx="80" cy="80" fill="none" stroke="' + COLORS[i % COLORS.length] + '" stroke-width="22" stroke-dasharray="' + len + ' ' + (C - len) + '" stroke-dashoffset="' + (-off) + '"/>'; off += len; return s; }).join('') : '<circle r="' + R + '" cx="80" cy="80" fill="none" stroke="#142c52" stroke-width="22"/>';
     $('donut').innerHTML = '<svg viewBox="0 0 160 160" aria-hidden="true">' + segs + '</svg><div class="mid"><b>' + total + '</b>incidents</div>';
     $('donut').setAttribute('aria-label', 'Attack types: ' + rows.map((a) => a.label + ' ' + a.primary).join(', '));
-    $('attackLegend').innerHTML = rows.length ? rows.map((a, i) => '<li><button type="button" data-attack="' + esc(a.id) + '" aria-pressed="' + (state.attack === a.id) + '"><i style="background:' + COLORS[i % COLORS.length] + '"></i><span>' + esc(a.label) + '</span><span class="m">' + a.primary + ' (' + a.associated + ')</span></button></li>').join('') : '<li class="hint">No classified incidents in this window.</li>';
-    $('attackLegend').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => toggle('attack', b.dataset.attack)));
+    $('attackLegend').innerHTML = rows.length ? rows.map((a, i) => '<li><button type="button" data-attack="' + esc(a.id) + '" aria-pressed="' + (state.attack === a.id) + '"><i style="background:' + COLORS[i % COLORS.length] + '"></i><span>' + esc(a.label) + '</span><span class="m">' + a.primary + ' (' + a.associated + ')</span></button><button type="button" class="legend-more" data-detail="' + esc(a.id) + '" aria-label="Details for ' + esc(a.label) + '">Details ›</button></li>').join('') : '<li class="hint">No classified incidents in this window.</li>';
+    $('attackLegend').querySelectorAll('button[data-attack]').forEach((b) => b.addEventListener('click', () => toggle('attack', b.dataset.attack)));
+    $('attackLegend').querySelectorAll('.legend-more').forEach((b) => b.addEventListener('click', () => window.OctaspanAttack && OctaspanAttack.open(b.dataset.detail, b)));
   }
   function renderTrends() {
     $('trends').innerHTML = snap.trends.length ? snap.trends.map((t) => '<li><b>' + esc(t.title) + '</b><span>' + esc(t.detail) + '</span></li>').join('') : '<li><b>No notable developments in this window</b><span>Trends are calculated from the data that matches the current window and filters.</span></li>';
@@ -195,6 +196,7 @@
     $('fNext').textContent = 'Every ' + h.refreshHours + ' hours' + (h.nextUpdateAt ? ' · next ≈ ' + new Date(h.nextUpdateAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '');
   }
 
+  window.OctaspanThreat = { snap: () => snap, colors: COLORS, filterBy(key, val) { FILTERS.forEach((f) => (state[f] = undefined)); state[key] = val; return load(); } };
   function toggle(key, val) { state[key] = state[key] === val ? undefined : val; load(); }
 
   // events

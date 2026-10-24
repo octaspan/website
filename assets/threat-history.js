@@ -34,6 +34,7 @@
     const panel = $('history'); if (!panel) return;
     if (!j || !j.enabled) { panel.hidden = true; return; } // archive not switched on: show nothing
     rows = Array.isArray(j.rows) ? j.rows : [];
+    window.OctaspanHistoryRows = rows;
     panel.hidden = false;
     render();
   }

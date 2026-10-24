@@ -181,3 +181,18 @@ test('snapshot: kpiDetails lists the items behind each KPI', async () => {
   assert.equal(snap.kpiDetails.reports.breakdown[0].rows[0].id, 'SRC-01');
   assert.ok(snap.kpiDetails.ransomware.items.every((i) => /^https?:/.test(i.url)));
 });
+
+test('snapshot: attackDetails carries per-type breakdowns and a timeline', async () => {
+  const now = Date.now();
+  const src = { source_id: 'SRC-01', name: 'BleepingComputer', enabled: true, ingestion_method: 'rss', category: 'news' };
+  const t = 'Akira ransomware gang attacks a hospital';
+  const c = classify({ title: t, summary: t, source: src });
+  const reports = [{ id: 'a', sourceId: 'SRC-01', sourceName: 'BleepingComputer', sourceCategory: 'news', title: t, url: 'https://x.test/a', publishedAt: now - 3600e3, ingestedAt: now, excerpt: t, ...c }];
+  clusterReports(reports);
+  const snap = buildSnapshot({ reports, sources: [src], status: { firstIngestAt: now - 9e9, lastSuccessAt: now, sources: {} }, now, query: { window: '72h' } });
+  const d = snap.attackDetails.ransomware;
+  assert.equal(d.timeline.length, 12);
+  assert.equal(d.timeline.reduce((n, x) => n + x.n, 0), d.associated);
+  assert.equal(d.severities.reduce((n, x) => n + x.n, 0), d.associated);
+  assert.ok(d.items.length >= 1 && /^https?:/.test(d.items[0].url));
+});

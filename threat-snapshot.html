@@ -66,7 +66,7 @@
         <div id="sectors" class="bars"></div>
       </section>
       <section class="panel" aria-labelledby="atkH">
-        <h2 id="atkH">Attack types</h2>
+        <div class="panel-head"><h2 id="atkH">Attack types</h2><button type="button" class="btn" id="atkOpen">Open detailed view</button></div>
         <p class="hint">Each incident is placed in one <b>primary</b> type for the chart; the number in brackets counts every associated type. Click to filter.</p>
         <div class="donut-wrap"><div id="donut" class="donut" role="img" aria-label="Attack type distribution"></div><ul id="attackLegend" class="legend"></ul></div>
       </section>
@@ -153,6 +153,7 @@
 </footer>
 <script src="assets/threat.js"></script>
 <script src="assets/threat-history.js"></script>
+<script src="assets/threat-attack.js"></script>
 <script src="assets/analytics.js"></script>
 </body>
 </html>
