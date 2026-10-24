@@ -123,12 +123,15 @@ function handleNewsletter(payload) {
   ]);
 }
 
-function handleFeedback(payload) {
-  if (payload.website) return; // honeypot: real visitors never fill this hidden field
-  const sheet = getOrCreateSheet(SHEETS.feedback, HEADERS.feedback);
-  const clip = (v, n) => String(v || '').slice(0, n);
-  safeAppend(sheet, [
-    new Date(),
+/** Gmail label applied to every feedback email (created automatically). */
+const FEEDBACK_LABEL = 'FEEDBACK - Live Threat Snapshot';
+
+const clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+
+/** One sheet row per feedback: every value in its own column (order matches HEADERS.feedback). */
+function feedbackRow(payload, when) {
+  return [
+    when || new Date(),
     clip(payload.firstName, 80),
     clip(payload.lastName, 80),
     clip(payload.company, 160),
@@ -139,8 +142,87 @@ function handleFeedback(payload) {
     clip(payload.feedback, 3000),
     payload.consent ? 'Yes' : 'No',
     clip(payload.page, 300),
-  ]);
-  notify('New website feedback (' + clip(payload.topic, 60) + ') from ' + clip(payload.company, 160), clip(payload.email, 160));
+  ];
+}
+
+function handleFeedback(payload) {
+  if (payload.website) return; // honeypot: real visitors never fill this hidden field
+  const firstTime = !getSpreadsheet().getSheetByName(SHEETS.feedback);
+  const sheet = getOrCreateSheet(SHEETS.feedback, HEADERS.feedback);
+  if (firstTime) formatFeedbackSheet(sheet);
+  safeAppend(sheet, feedbackRow(payload));
+  try { emailFeedback(payload); } catch (err) { logError(err, null); } // never lose the sheet row because of an email problem
+}
+
+/** Column widths + wrapping so each value sits in its own readable column. */
+function formatFeedbackSheet(sheet) {
+  const widths = [150, 110, 110, 180, 150, 220, 130, 170, 420, 110, 260];
+  widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+  sheet.getRange(1, 1, 1, widths.length).setBackground('#0b1b38').setFontColor('#ffffff');
+  sheet.getRange(2, 9, 1000, 1).setWrap(true);
+  sheet.getRange(2, 1, 1000, 1).setNumberFormat('yyyy-mm-dd hh:mm');
+}
+
+/** Sends the feedback to NOTIFY_EMAIL, replies go to the visitor, and the thread gets the Gmail label. */
+function emailFeedback(payload) {
+  if (!NOTIFY_EMAIL) return;
+  const name = (clip(payload.firstName, 80) + ' ' + clip(payload.lastName, 80)).trim();
+  const subject = '[' + FEEDBACK_LABEL + '] ' + clip(payload.company, 120) + ' - ' + name;
+  const body = [
+    'New feedback from the Live Threat Snapshot page', '',
+    'Name:     ' + name, 'Company:  ' + clip(payload.company, 160), 'Role:     ' + clip(payload.role, 120),
+    'Email:    ' + clip(payload.email, 160), 'Phone:    ' + (clip(payload.phone, 40) || '-'),
+    'Topic:    ' + (clip(payload.topic, 60) || '-'), 'Page:     ' + clip(payload.page, 300), '',
+    'Feedback:', clip(payload.feedback, 3000), '',
+    'Also saved in the Google Sheet "' + SPREADSHEET_NAME + '", tab "' + SHEETS.feedback + '".',
+  ].join('\n');
+  const opts = { name: 'Octaspan Website' };
+  const reply = clip(payload.email, 160);
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reply)) opts.replyTo = reply;
+  GmailApp.sendEmail(NOTIFY_EMAIL, subject, body, opts);
+  Utilities.sleep(2500); // let the message land in the mailbox before labelling
+  labelFeedbackThreads();
+}
+
+/** Applies the Gmail label to every feedback email that does not have it yet (works in the mailbox that owns this script). */
+function labelFeedbackThreads() {
+  const label = GmailApp.getUserLabelByName(FEEDBACK_LABEL) || GmailApp.createLabel(FEEDBACK_LABEL);
+  const threads = GmailApp.search('subject:"[' + FEEDBACK_LABEL + ']" -label:"' + FEEDBACK_LABEL.replace(/ /g, '-') + '" newer_than:7d', 0, 50);
+  if (threads.length) label.addToThreads(threads);
+}
+
+/** Run once from the editor: a safety net that labels any feedback email the instant label missed. */
+function installFeedbackLabelTrigger() {
+  ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === 'labelFeedbackThreads').forEach((t) => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('labelFeedbackThreads').timeBased().everyMinutes(5).create();
+}
+
+/** Run once from the editor: moves old feedback that landed in "Unrecognized Submissions" (as raw JSON) into proper columns. */
+function migrateFeedbackFromUnrecognized() {
+  const ss = getSpreadsheet();
+  const src = ss.getSheetByName('Unrecognized Submissions');
+  if (!src || src.getLastRow() < 2) return 'Nothing to migrate.';
+  const values = src.getRange(2, 1, src.getLastRow() - 1, 2).getValues();
+  const keep = []; let moved = 0;
+  values.forEach((row) => {
+    let p = null; try { p = JSON.parse(row[1]); } catch (_) {}
+    if (p && p.formType === 'feedback') {
+      const firstTime = !ss.getSheetByName(SHEETS.feedback);
+      const sh = getOrCreateSheet(SHEETS.feedback, HEADERS.feedback);
+      if (firstTime) formatFeedbackSheet(sh);
+      safeAppend(sh, feedbackRow(p, row[0]));
+      moved++;
+    } else keep.push(row);
+  });
+  src.getRange(2, 1, src.getLastRow() - 1, 2).clearContent();
+  if (keep.length) src.getRange(2, 1, keep.length, 2).setValues(keep);
+  return 'Moved ' + moved + ' feedback row(s).';
+}
+
+/** Run once from the editor: grants the Gmail permission, writes a sample row, sends + labels a test email. */
+function testFeedback() {
+  handleFeedback({ formType: 'feedback', firstName: 'Test', lastName: 'User', company: 'Octaspan (test)', role: 'Tester', email: NOTIFY_EMAIL, phone: '', topic: 'Something else', feedback: 'This is a test feedback row - safe to delete.', consent: true, page: '/threat-snapshot' });
+  return 'Check the "' + SHEETS.feedback + '" tab and your inbox.';
 }
 
 function handleContact(payload) {

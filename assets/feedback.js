@@ -1,4 +1,4 @@
-/* Octaspan feedback widget: a tab fixed to the left edge that slides a feedback form in from the right.
+/* Octaspan feedback widget: a tab fixed to the right edge that slides a feedback form in from the right.
    Submits to the same Google Apps Script endpoint as the other forms (formType "feedback" -> "Website Feedback" sheet). */
 (function () {
   'use strict';
@@ -6,9 +6,10 @@
   var COOLDOWN_MS = 30000, KEY = 'octaspan_feedback_last';
 
   var css = '' +
-  '.fb-tab{position:fixed;left:0;top:76%;transform:translateY(-50%);z-index:9990;writing-mode:vertical-rl;transform-origin:center;background:#29d3f0;color:#04122a;border:0;border-radius:0 10px 10px 0;padding:16px 9px;font:600 13px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:4px 4px 18px rgba(0,0,0,.35);transition:padding .15s,background .15s}' +
-  '.fb-tab:hover,.fb-tab:focus-visible{background:#6fe3f6;padding-left:13px}' +
+  '.fb-tab{position:fixed;right:0;top:62%;transform:translateY(-50%);z-index:9990;writing-mode:vertical-rl;transform-origin:center;background:#29d3f0;color:#04122a;border:0;border-radius:10px 0 0 10px;padding:16px 9px;font:600 13px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:-4px 4px 18px rgba(0,0,0,.35);transition:padding .15s,background .15s}' +
+  '.fb-tab:hover,.fb-tab:focus-visible{background:#6fe3f6;padding-right:13px}' +
   '.fb-tab svg{width:14px;height:14px;margin-bottom:8px;transform:rotate(90deg)}' +
+  'body.fb-open .fb-tab{display:none}' +
   '.fb-scrim{position:fixed;inset:0;z-index:10000;background:rgba(2,8,20,.55);opacity:0;pointer-events:none;transition:opacity .25s}' +
   '.fb-scrim.open{opacity:1;pointer-events:auto}' +
   '.fb-panel{position:fixed;top:0;right:0;bottom:0;z-index:10001;width:min(440px,100%);background:#0a1a38;color:#e8f0fd;border-left:1px solid #29d3f0;box-shadow:-20px 0 60px rgba(0,0,0,.55);transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;font:14px/1.5 "IBM Plex Sans",system-ui,sans-serif}' +
@@ -83,11 +84,11 @@
 
   function open(from) {
     opener = from || document.activeElement;
-    panel.classList.add('open'); scrim.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); tab.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('fb-open'); panel.classList.add('open'); scrim.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); tab.setAttribute('aria-expanded', 'true');
     setTimeout(function () { var f = panel.querySelector('input[name=firstName]') || panel.querySelector('.fb-x'); if (f) f.focus(); }, 80);
   }
   function close() {
-    panel.classList.remove('open'); scrim.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); tab.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('fb-open'); panel.classList.remove('open'); scrim.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); tab.setAttribute('aria-expanded', 'false');
     if (opener && opener.focus) opener.focus();
   }
 
