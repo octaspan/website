@@ -88,6 +88,18 @@
       </section>
     </div>
 
+    <section id="history" class="panel" aria-labelledby="histH" hidden>
+      <div class="hist-head">
+        <div><h2 id="histH">Long-term trends</h2>
+        <p class="hint">Reports published per period, from the archive that grows every 3 hours. Counts are reports (publications), not de-duplicated incidents.</p></div>
+        <div class="hist-ctl">
+          <div class="seg" role="group" aria-label="History range" id="histRange"><button type="button" data-r="90" aria-pressed="true">90 days</button><button type="button" data-r="180" aria-pressed="false">6 months</button><button type="button" data-r="365" aria-pressed="false">12 months</button></div>
+          <div class="seg" role="group" aria-label="Group by" id="histBy"><button type="button" data-by="sector" aria-pressed="true">By sector</button><button type="button" data-by="attack" aria-pressed="false">By attack type</button></div>
+        </div>
+      </div>
+      <div id="histBody"><div class="skel"></div></div>
+    </section>
+
     <section id="financial" class="panel" aria-labelledby="finH">
       <h2 id="finH">Publicly disclosed financial impact</h2>
       <p class="hint">Only amounts a source explicitly ties to a cyber incident are listed. Ransom demands, estimates and allegations are shown but never added to the headline total, and an amount repeated across articles on one incident counts once.</p>
@@ -140,6 +152,7 @@
   <p>Summarizes publicly available reporting from trusted sources. It is not a complete view of global attacks and does not describe attacks on your network or clients. <a href="#methodology">Methodology and source list</a></p>
 </footer>
 <script src="assets/threat.js"></script>
+<script src="assets/threat-history.js"></script>
 <script src="assets/analytics.js"></script>
 </body>
 </html>

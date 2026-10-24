@@ -100,3 +100,15 @@ h1{margin:2px 0 4px;font-size:clamp(28px,3.4vw,40px);line-height:1.1;font-weight
 @media(max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .v{font-size:28px}}
 @media(max-width:520px){.filters{grid-template-columns:1fr}.cards{display:flex}.foot{padding:16px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+
+/* long-term trends */
+.hist-head{display:flex;justify-content:space-between;gap:14px 20px;flex-wrap:wrap;align-items:flex-start;margin-bottom:10px}
+.hist-ctl{display:flex;gap:10px;flex-wrap:wrap}
+.hist-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+.hist-chart{width:100%;height:auto;display:block;margin:6px 0 4px}
+.hist-chart g:hover rect{opacity:.85}
+.hist-legend{list-style:none;margin:6px 0 4px;padding:0;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--mute)}
+.hist-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.hist-h3{margin:18px 0 0;font-size:15px;font-weight:600}
+#history[hidden]{display:none}
+@media(max-width:900px){.hist-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
