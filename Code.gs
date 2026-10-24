@@ -33,6 +33,7 @@ const SHEETS = {
   contact: 'Contact Submissions',
   rfp: 'RFP Submissions',
   partner: 'Partner Applications',
+  feedback: 'Website Feedback',
 };
 
 /** Column headers for each tab, in order. Keep in sync with the payloads in index.html. */
@@ -50,6 +51,7 @@ const HEADERS = {
     'Business Challenge', 'Start Date', 'Completion Date', 'Estimated Budget',
     'Proposal Deadline', 'Other Firms Invited', 'File Links', 'File Count',
   ],
+  feedback: ['Timestamp', 'First Name', 'Last Name', 'Company', 'Role', 'Email', 'Phone', 'Topic', 'Feedback', 'Consent (Privacy & Terms)', 'Page'],
   partner: [
     'Timestamp', 'Partner Type', 'Company Name', 'Website', 'Company LinkedIn', 'Country', 'City',
     'Company Type', 'Company Size', 'Year Established', 'Contact Person', 'Designation',
@@ -82,6 +84,8 @@ function doPost(e) {
       handleRfp(payload);
     } else if (formType === 'partner') {
       handlePartner(payload);
+    } else if (formType === 'feedback') {
+      handleFeedback(payload);
     } else {
       logUnknown(payload);
     }
@@ -114,6 +118,26 @@ function handleNewsletter(payload) {
     (payload.interests || []).join(', '),
     payload.page || '',
   ]);
+}
+
+function handleFeedback(payload) {
+  if (payload.website) return; // honeypot: real visitors never fill this hidden field
+  const sheet = getOrCreateSheet(SHEETS.feedback, HEADERS.feedback);
+  const clip = (v, n) => String(v || '').slice(0, n);
+  safeAppend(sheet, [
+    new Date(),
+    clip(payload.firstName, 80),
+    clip(payload.lastName, 80),
+    clip(payload.company, 160),
+    clip(payload.role, 120),
+    clip(payload.email, 160),
+    clip(payload.phone, 40),
+    clip(payload.topic, 60),
+    clip(payload.feedback, 3000),
+    payload.consent ? 'Yes' : 'No',
+    clip(payload.page, 300),
+  ]);
+  notify('New website feedback (' + clip(payload.topic, 60) + ') from ' + clip(payload.company, 160), clip(payload.email, 160));
 }
 
 function handleContact(payload) {
