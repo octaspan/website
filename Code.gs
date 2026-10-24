@@ -105,7 +105,7 @@ function doPost(e) {
 /** Lets you open the Web App URL directly in a browser to confirm it's live. */
 function doGet() {
   return ContentService.createTextOutput(
-    'Octaspan form-intake endpoint is live (v2). POST only.'
+    'Octaspan form-intake endpoint is live (v3 - feedback + Gmail label). POST only.'
   ).setMimeType(ContentService.MimeType.TEXT);
 }
 
