@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getJSON, setJSON } from './store.mjs';
-import { archiveReports } from './archive.mjs';
+import { archiveReports, archiveEnabled } from './archive.mjs';
 import { DEFAULT_SOURCES, mergeRegistry, SEC_USER_AGENT } from './sources.mjs';
 import { parseFeed, parseSecSearch, canonicalUrl } from './parse.mjs';
 import { classify } from './classify.mjs';
@@ -98,8 +98,13 @@ export async function runIngest({ fetchImpl = fetch, now = Date.now(), force = f
     await setJSON('status', status);
     summary.total = reports.length;
     try { // long-term archive (Supabase) — only reports first seen in this run; optional and never fatal
-      const fresh = reports.filter((r) => r.ingestedAt === now);
-      summary.archived = (await archiveReports(fresh, { fetchImpl })).archived;
+      // First run after the archive is switched on: copy everything still held in the live store (up to 35 days).
+      const backfilled = await getJSON('archiveBackfilled', null);
+      const batch = backfilled ? reports.filter((r) => r.ingestedAt === now) : reports;
+      let n = 0;
+      for (let i = 0; i < batch.length; i += 400) n += (await archiveReports(batch.slice(i, i + 400), { fetchImpl })).archived;
+      summary.archived = n;
+      if (!backfilled && archiveEnabled()) await setJSON('archiveBackfilled', { at: now, count: n });
     } catch (e) { summary.archiveError = String(e.message || e).slice(0, 160); }
     return summary;
   } finally {
